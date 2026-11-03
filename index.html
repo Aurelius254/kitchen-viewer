@@ -33,6 +33,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px
 header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px}
 .brand h1{margin:0;font-size:18px;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
 .brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.pdf-link{margin-left:auto;font:500 13px var(--sans);color:var(--accent);border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:9px 12px;text-decoration:none}
+.pdf-link:hover{background:var(--accent-soft)}
 .views{display:flex;flex-wrap:wrap;gap:4px;padding:3px;background:var(--panel);border:1px solid var(--line);border-radius:8px}
 .views button{font:500 13px var(--sans);color:var(--fg);background:transparent;border:0;border-radius:6px;padding:7px 11px;cursor:pointer}
 .views button:hover{background:var(--accent-soft)}
@@ -76,6 +78,7 @@ aside h3:first-child{margin-top:0}
       <h1>Kitchen fit-out</h1>
       <p>Concept view · sink wall and fridge wall · sizes in mm</p>
     </div>
+    <a class="pdf-link" href="kitchen-design.pdf" target="_blank" rel="noopener">Design PDF</a>
     <nav class="views" aria-label="Camera views">
       <button id="v-overview" data-view="overview" aria-pressed="true">Overview</button>
       <button id="v-front" data-view="front" aria-pressed="false">Sink wall</button>
