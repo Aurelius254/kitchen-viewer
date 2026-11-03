@@ -378,9 +378,9 @@ reg(ep,'panel','Electrical panel (existing)','≈ 300 W × 420 H','Left clear; n
 
 /* ---------- fridge wall (left, x=0); local x runs from the far end toward the corner ---------- */
 const left=new THREE.Group(); left.rotation.y=Math.PI/2; left.position.set(0,0,2.1); scene.add(left);
-const base=baseUnit(1.25,[{w:.45,type:'drawerDoor',handle:'right'},{w:.8,type:'drawers',n:5}]);
+const base=baseUnit(1.25,[{w:.625,type:'drawerDoor',handle:'right'},{w:.625,type:'drawerDoor',handle:'left'}]);
 left.add(base);
-reg(base,'base','Working-area base unit','1250 W × 600 D × 900 H','Drawer over a cupboard, then a stack of five drawers. Black worktop.','left');
+reg(base,'base','Working-area base unit','1250 W × 600 D × 900 H','Two equal 625 mm sections, each a small drawer over a cupboard. Black worktop.','left');
 const wc=wallCab(1.25,.75,.35,['right','left','right','left']); wc.position.set(0,1.5,0); left.add(wc);
 reg(wc,'wallRun','Wall cabinets','1250 W × 350 D × 750 H','Four doors over the working area, underside at 1500 mm.','left');
 const mw=microwaveCubby(.5,.35,.35); mw.position.set(0,1.15,0); left.add(mw);
