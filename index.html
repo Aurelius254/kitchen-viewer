@@ -33,8 +33,9 @@ body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px
 header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px}
 .brand h1{margin:0;font-size:18px;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
 .brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
-.pdf-link{margin-left:auto;font:500 13px var(--sans);color:var(--accent);border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:9px 12px;text-decoration:none}
-.pdf-link:hover{background:var(--accent-soft)}
+.pdf-link{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font:600 14px var(--sans);color:var(--accent);border:1.5px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:8px 14px;text-decoration:none;line-height:1}
+.pdf-link:hover{background:var(--accent);color:var(--accent-fg)}
+.pdf-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .views{display:flex;flex-wrap:wrap;gap:4px;padding:3px;background:var(--panel);border:1px solid var(--line);border-radius:8px}
 .views button{font:500 13px var(--sans);color:var(--fg);background:transparent;border:0;border-radius:6px;padding:7px 11px;cursor:pointer}
 .views button:hover{background:var(--accent-soft)}
@@ -78,7 +79,7 @@ aside h3:first-child{margin-top:0}
       <h1>Kitchen fit-out</h1>
       <p>Concept view · sink wall and fridge wall · sizes in mm</p>
     </div>
-    <a class="pdf-link" href="kitchen-design.pdf" target="_blank" rel="noopener">Design PDF</a>
+    <a class="pdf-link" href="kitchen-design.pdf" download="kitchen-design.pdf" aria-label="Download design PDF" title="Download design PDF"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>PDF</span></a>
     <nav class="views" aria-label="Camera views">
       <button id="v-overview" data-view="overview" aria-pressed="true">Overview</button>
       <button id="v-front" data-view="front" aria-pressed="false">Sink wall</button>
