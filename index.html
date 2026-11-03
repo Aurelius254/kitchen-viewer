@@ -199,6 +199,7 @@ const M={
   top:new THREE.MeshStandardMaterial({map:graniteTex,roughness:.25,metalness:.05}),
   fsteel:new THREE.MeshStandardMaterial({map:fridgeTex,roughness:.36,metalness:.35}),
   lcd:new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xe6eeff,emissiveIntensity:.9}),
+  handle:new THREE.MeshStandardMaterial({color:0x161718,roughness:.3,metalness:.2}),
   steel:new THREE.MeshStandardMaterial({color:0xcfd2d4,roughness:.32,metalness:.55}),
   steelDark:new THREE.MeshStandardMaterial({color:0x9a9fa2,roughness:.4,metalness:.5}),
   chrome:new THREE.MeshStandardMaterial({color:0xe6e8ea,roughness:.15,metalness:.8}),
@@ -227,8 +228,8 @@ function C(p,r,h,x,y,z,mat,axis){
   m.position.set(x,y,z); m.castShadow=true; m.receiveShadow=true; p.add(m); return m;
 }
 const FT=0.018, GAP=0.003;
-function handleV(p,x,yc,len,z){C(p,.006,len,x,yc,z+.028,M.chrome); C(p,.004,.028,x,yc+len/2-.02,z+.014,M.chrome,'z'); C(p,.004,.028,x,yc-len/2+.02,z+.014,M.chrome,'z')}
-function handleH(p,xc,y,len,z){C(p,.006,len,xc,y,z+.028,M.chrome,'x'); C(p,.004,.028,xc-len/2+.02,y,z+.014,M.chrome,'z'); C(p,.004,.028,xc+len/2-.02,y,z+.014,M.chrome,'z')}
+function handleV(p,x,yc,len,z){C(p,.006,len,x,yc,z+.028,M.handle); C(p,.004,.028,x,yc+len/2-.02,z+.014,M.handle,'z'); C(p,.004,.028,x,yc-len/2+.02,z+.014,M.handle,'z')}
+function handleH(p,xc,y,len,z){C(p,.006,len,xc,y,z+.028,M.handle,'x'); C(p,.004,.028,xc-len/2+.02,y,z+.014,M.handle,'z'); C(p,.004,.028,xc+len/2-.02,y,z+.014,M.handle,'z')}
 function door(p,x0,y0,w,h,z,handle,hy){
   B(p,x0+GAP,y0+GAP,z,w-2*GAP,h-2*GAP,FT,M.cab);
   if(handle){const hx=handle==='left'?x0+.045:x0+w-.045; const len=Math.min(.2,h*.45); handleV(p,hx,hy!=null?hy:(y0+h-.05-len/2),len,z+FT)}
