@@ -99,7 +99,9 @@ aside h3:first-child{margin-top:0}
       <h3>Fridge wall (left)</h3>
       <div class="list" id="list-left"></div>
       <h3>Room</h3>
-      <div class="list"><div class="item" style="cursor:default"><span>Room shell</span><small>≈ 3400 × 3400 × 2800 H</small></div>
+      <div class="list"><div class="item" style="cursor:default"><span>Sink wall</span><small>3600 long × 2800 H, open above</small></div>
+        <div class="item" style="cursor:default"><span>Fridge wall</span><small>≈ 4050 long × 3600 H</small></div>
+        <div class="item" style="cursor:default"><span>Other two sides</span><small>Open, no walls</small></div>
         <div class="item" style="cursor:default"><span>Doorway</span><small>900 W × 2100 H (assumed)</small></div></div>
       <h3>Notes</h3>
       <ul class="notes">
@@ -115,7 +117,7 @@ aside h3:first-child{margin-top:0}
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 (function(){
-const W=3.4, D=3.4, H=2.8, T=0.1;           // room interior (m)
+const W=3.6, D=4.05, H=2.8, HL=3.6, T=0.1;  // sink wall length, fridge wall length, wall heights (m); other two sides open
 const stage=document.getElementById('stage');
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
@@ -143,7 +145,7 @@ scene.add(new THREE.HemisphereLight(0xffffff,0xb9a58a,0.55));
 const sun=new THREE.DirectionalLight(0xffffff,0.75);
 sun.position.set(W+1.5,5.5,D+2.5); sun.target.position.set(W/2,0,D/2);
 sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
-Object.assign(sun.shadow.camera,{left:-3.2,right:3.2,top:3.2,bottom:-3.2,near:0.5,far:14});
+Object.assign(sun.shadow.camera,{left:-3.6,right:3.6,top:3.6,bottom:-3.6,near:0.5,far:14});
 sun.shadow.bias=-0.0004; sun.shadow.normalBias=0.02;
 scene.add(sun,sun.target);
 const fill=new THREE.PointLight(0xfff4e6,0.35,9); fill.position.set(W/2,H-0.2,D/2); scene.add(fill);
@@ -344,21 +346,18 @@ floor.rotation.x=-Math.PI/2; floor.position.set(W/2,0,D/2); floor.receiveShadow=
 const outsideFloor=new THREE.Mesh(new THREE.PlaneGeometry(1.4,1.4),M.outside);
 outsideFloor.rotation.x=-Math.PI/2; outsideFloor.position.set(2.55,-.002,-.8); scene.add(outsideFloor);
 
-const walls={front:new THREE.Group(),left:new THREE.Group(),right:new THREE.Group(),back:new THREE.Group()};
+const walls={front:new THREE.Group(),left:new THREE.Group()};
 Object.values(walls).forEach(g=>scene.add(g));
 const DX0=2.1, DX1=3.0, DH=2.1;                      // doorway
 B(walls.front,-T,0,-T,DX0+T,H,T,M.wall);
 B(walls.front,DX0,DH,-T,DX1-DX0,H-DH,T,M.wall);
-B(walls.front,DX1,0,-T,W+T-DX1,H,T,M.wall);
+B(walls.front,DX1,0,-T,W-DX1,H,T,M.wall);            // 600 mm return after the doorway
 B(walls.front,DX0-.04,0,-T-.01,.04,DH+.04,T+.02,M.frame);   // door frame
 B(walls.front,DX1,0,-T-.01,.04,DH+.04,T+.02,M.frame);
 B(walls.front,DX0-.04,DH,-T-.01,DX1-DX0+.08,.04,T+.02,M.frame);
-B(walls.left,-T,0,0,T,H,D,M.wall);
-B(walls.right,W,0,0,T,H,D,M.wall);
-B(walls.back,-T,0,D,W+2*T,H,T,M.wall);
+B(walls.left,-T,0,0,T,HL,D,M.wall);                 // runs ~1 m past the fridge
 const ep=elecPanel(); ep.position.set(.45,1.2,0); walls.front.add(ep);
-C(walls.front,.012,2.5,.06,1.55,.03,M.pipe);                // existing water line near corner
-const WALLHIDE=[[walls.front,p=>p.z<0],[walls.left,p=>p.x<0],[walls.right,p=>p.x>W],[walls.back,p=>p.z>D]];
+const WALLHIDE=[[walls.front,p=>p.z<0],[walls.left,p=>p.x<0]];
 
 /* ---------- registry ---------- */
 const items=[];
@@ -443,9 +442,9 @@ renderer.domElement.addEventListener('pointerup',e=>{
 /* ---------- views ---------- */
 const V=(x,y,z)=>new THREE.Vector3(x,y,z);
 const VIEWS={
-  overview:[V(W+1.7,2.9,D+2.0),V(1.25,.85,1.25)],
-  front:[V(1.45,1.5,D+.9),V(1.45,1.2,0)],
-  left:[V(W+.9,1.5,1.6),V(0,1.15,1.6)],
+  overview:[V(W+1.6,3.1,D+1.4),V(1.3,.9,1.5)],
+  front:[V(1.6,1.5,3.7),V(1.6,1.2,0)],
+  left:[V(3.7,1.55,1.8),V(0,1.2,1.8)],
   eye:[V(3.0,1.6,3.0),V(.6,1.15,.7)],
   plan:[V(W/2,7.2,D/2+.02),V(W/2,0,D/2)],
 };
