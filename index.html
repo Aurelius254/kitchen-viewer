@@ -257,12 +257,12 @@ function baseUnit(w,sections,opts={}){
     B(g,sx,y,sz,sw,.004,sd,M.steel,false);
     B(g,sx+.025,y+.002,sz+.025,sw-.05,.003,sd-.05,M.steelDark,false);
     C(g,.022,.004,sx+sw/2,y+.006,sz+sd/2+.04,M.chrome);
-    const fx=sx+sw+.04, fz=.07;
+    const tapLeft=opts.sink.tap==='left', fx=tapLeft?sx-.04:sx+sw+.04, fz=.07;
     C(g,.024,.05,fx,h+.025,fz,M.chrome); C(g,.014,.30,fx,h+.2,fz,M.chrome);
     const R=.085, arc=new THREE.Mesh(new THREE.TorusGeometry(R,.013,10,28,Math.PI),M.chrome);
     arc.rotation.y=-Math.PI/2; arc.position.set(fx,h+.35,fz+R); arc.castShadow=true; g.add(arc);
     C(g,.013,.05,fx,h+.325,fz+2*R,M.chrome);
-    B(g,fx+.012,h+.17,fz-.006,.07,.012,.012,M.chrome);
+    B(g,tapLeft?fx-.082:fx+.012,h+.17,fz-.006,.07,.012,.012,M.chrome);
   }
   return g;
 }
@@ -367,9 +367,9 @@ function reg(obj,id,name,dims,note,wall){obj.userData.item={id,name,dims,note,wa
 /* ---------- sink wall (front, z=0) ---------- */
 const front=new THREE.Group(); scene.add(front);
 const sinkX=DX0-.02-1.1;
-const sink=baseUnit(1.1,[{w:.495,type:'door',handle:'right'},{w:.605,type:'drawerDoor',handle:'left'}],{sink:{x:.03}});
+const sink=baseUnit(1.1,[{w:.605,type:'drawerDoor',handle:'right'},{w:.495,type:'door',handle:'left'}],{sink:{x:1.1-.03-.44,tap:'left'}});
 sink.position.set(sinkX,0,0); front.add(sink);
-reg(sink,'sink','Sink unit','1100 W × 600 D × 900 H','Bowl over the left door; drawer and cupboard on the right. Starts at the doorway.','front');
+reg(sink,'sink','Sink unit','1100 W × 600 D × 900 H','Drawer and cupboard on the left; bowl over the right door, by the doorway.','front');
 const sinkWall=wallCab(1.1,.75,.3,['right','left']); sinkWall.position.set(sinkX,1.5,0); front.add(sinkWall);
 reg(sinkWall,'sinkWall','Wall cabinet over sink','1100 W × 300 D × 750 H','Two doors, underside 600 mm above the worktop (1500 mm from floor).','front');
 const bin=pedalBin(); bin.position.set(sinkX-.02-.26,0,.03); front.add(bin);
