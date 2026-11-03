@@ -105,7 +105,6 @@ aside h3:first-child{margin-top:0}
       <ul class="notes">
         <li><b>Sink + bin run is 1380 mm</b>, about 130 mm more than the 1250 mm from the doorway. The bin sits under the electrical panel, which still leaves the panel clear.</li>
         <li>The fridge-wall length comes from the units: fridge, working area, dispenser and rack add up to about 3050 mm.</li>
-        <li>Fridge is a placeholder shape at the right size until its photo arrives.</li>
         <li>Wall-cabinet depth on the fridge wall is assumed at 350 mm.</li>
       </ul>
     </aside>
@@ -178,6 +177,11 @@ const graniteTex=canvasTex(512,(g,s)=>{
   g.fillStyle='#141515'; g.fillRect(0,0,s,s);
   for(let i=0;i<9000;i++){const v=40+rnd()*90; g.fillStyle=`rgba(${v},${v},${v+4},${0.25+rnd()*0.5})`; g.fillRect(rnd()*s,rnd()*s,1+rnd()*1.6,1+rnd()*1.6)}
 },[2,2]);
+const fridgeTex=canvasTex(256,(g,s)=>{
+  const gr=g.createLinearGradient(0,0,s,0); gr.addColorStop(0,'#9aa2a8'); gr.addColorStop(.55,'#bcc3c8'); gr.addColorStop(1,'#a3abb1');
+  g.fillStyle=gr; g.fillRect(0,0,s,s);
+  for(let i=0;i<300;i++){const v=150+rnd()*70; g.fillStyle=`rgba(${v},${v+4},${v+8},.10)`; g.fillRect(rnd()*s,0,.5+rnd()*1.2,s)}
+},[1,1]);
 const grainTex=canvasTex(256,(g,s)=>{
   g.fillStyle='#8a8d8e'; g.fillRect(0,0,s,s);
   for(let i=0;i<220;i++){const v=118+rnd()*40; g.fillStyle=`rgba(${v},${v+2},${v+3},.18)`; g.fillRect(rnd()*s,0,0.6+rnd()*1.5,s)}
@@ -191,6 +195,8 @@ const M={
   carc:new THREE.MeshStandardMaterial({color:0x7d8081,roughness:.7}),
   plinth:new THREE.MeshStandardMaterial({color:0x5f6263,roughness:.7}),
   top:new THREE.MeshStandardMaterial({map:graniteTex,roughness:.25,metalness:.05}),
+  fsteel:new THREE.MeshStandardMaterial({map:fridgeTex,roughness:.36,metalness:.35}),
+  lcd:new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xe6eeff,emissiveIntensity:.9}),
   steel:new THREE.MeshStandardMaterial({color:0xcfd2d4,roughness:.32,metalness:.55}),
   steelDark:new THREE.MeshStandardMaterial({color:0x9a9fa2,roughness:.4,metalness:.5}),
   chrome:new THREE.MeshStandardMaterial({color:0xe6e8ea,roughness:.15,metalness:.8}),
@@ -307,14 +313,21 @@ function bottleRack(){
   });
   return g;
 }
-function fridge(){
-  const g=new THREE.Group(), w=.9,h=1.78,d=.71;
-  B(g,0,.03,0,w,h-.03,d-.05,M.steelDark);
-  B(g,.005,.06,d-.05,w/2-.008,h-.07,.05,M.steel);
-  B(g,w/2+.003,.06,d-.05,w/2-.008,h-.07,.05,M.steel);
-  handleV(g,w/2-.04,1.05,.75,d); handleV(g,w/2+.04,1.05,.75,d);
-  B(g,.04,.01,d-.08,w-.08,.05,.06,M.black);
-  B(g,.12,1.32,d,.12,.08,.003,M.glass);
+function fridge(){ // side-by-side, freezer door on the left, matched to the supplied photo
+  const g=new THREE.Group(), w=.9,h=1.78,d=.71, dd=.05, lw=.40, body=d-dd;
+  B(g,.01,.03,0,w-.02,h-.03,body,M.steelDark);
+  B(g,0,.035,body,lw-.003,h-.035,dd,M.fsteel);
+  B(g,lw+.003,.035,body,w-lw-.003,h-.035,dd,M.fsteel);
+  B(g,lw-.003,.035,body+.01,.006,h-.04,dd-.01,M.black,false);
+  for(const x of [lw-.05,lw+.045]){
+    C(g,.012,.79,x,1.105,d+.045,M.chrome);
+    C(g,.012,.024,x,1.5,d+.045,M.chrome); C(g,.012,.024,x,.71,d+.045,M.chrome);
+    C(g,.009,.045,x,1.48,d+.022,M.chrome,'z'); C(g,.009,.045,x,.73,d+.022,M.chrome,'z');
+  }
+  B(g,.065,1.155,d,.25,.085,.003,M.glass,false);
+  B(g,.14,1.185,d+.003,.05,.026,.001,M.lcd,false);
+  B(g,.095,1.18,d+.003,.025,.008,.001,M.lcd,false); B(g,.225,1.18,d+.003,.04,.008,.001,M.lcd,false);
+  for(const x of [.05,w-.05]) for(const z of [.06,d-.07]) C(g,.02,.035,x,.0175,z,M.black);
   return g;
 }
 function elecPanel(){
@@ -381,7 +394,7 @@ reg(dsp,'disp','Water dispenser','≈ 320 W × 320 D × 950 H + bottle','Under t
 const rack=bottleRack(); rack.position.set(1.74,0,.02); left.add(rack);
 reg(rack,'rack','Bottle rack','≈ 310 W × 400 D × 1050 H','Three 18.9 L bottles, in the corner.','left');
 const fr=fridge(); fr.position.set(-.95,0,.02); left.add(fr);
-reg(fr,'fridge','Fridge','900 W × 710 D × 1780 H','Placeholder look; will match the photo you send.','left');
+reg(fr,'fridge','Fridge','900 W × 710 D × 1780 H','Side-by-side, stainless steel: freezer on the left with the display, fridge on the right.','left');
 
 /* ---------- side list ---------- */
 const btns={};
