@@ -183,17 +183,17 @@ const fridgeTex=canvasTex(256,(g,s)=>{
   for(let i=0;i<300;i++){const v=150+rnd()*70; g.fillStyle=`rgba(${v},${v+4},${v+8},.10)`; g.fillRect(rnd()*s,0,.5+rnd()*1.2,s)}
 },[1,1]);
 const grainTex=canvasTex(256,(g,s)=>{
-  g.fillStyle='#8a8d8e'; g.fillRect(0,0,s,s);
-  for(let i=0;i<220;i++){const v=118+rnd()*40; g.fillStyle=`rgba(${v},${v+2},${v+3},.18)`; g.fillRect(rnd()*s,0,0.6+rnd()*1.5,s)}
+  g.fillStyle='#74777a'; g.fillRect(0,0,s,s);
+  for(let i=0;i<220;i++){const v=100+rnd()*36; g.fillStyle=`rgba(${v},${v+2},${v+3},.18)`; g.fillRect(rnd()*s,0,0.6+rnd()*1.5,s)}
 },[1,1]);
 
 /* ---------- materials ---------- */
 const M={
-  wall:new THREE.MeshStandardMaterial({color:0xf3f3f0,roughness:.95}),
+  wall:new THREE.MeshStandardMaterial({color:0xf4f5f4,roughness:.95}),
   floor:new THREE.MeshStandardMaterial({map:woodTex,roughness:.62}),
   cab:new THREE.MeshStandardMaterial({map:grainTex,color:0xffffff,roughness:.55}),
-  carc:new THREE.MeshStandardMaterial({color:0x7d8081,roughness:.7}),
-  plinth:new THREE.MeshStandardMaterial({color:0x5f6263,roughness:.7}),
+  carc:new THREE.MeshStandardMaterial({color:0x6c6f72,roughness:.7}),
+  plinth:new THREE.MeshStandardMaterial({color:0x585b5e,roughness:.7}),
   top:new THREE.MeshStandardMaterial({map:graniteTex,roughness:.25,metalness:.05}),
   fsteel:new THREE.MeshStandardMaterial({map:fridgeTex,roughness:.36,metalness:.35}),
   lcd:new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xe6eeff,emissiveIntensity:.9}),
@@ -205,7 +205,7 @@ const M={
   white:new THREE.MeshStandardMaterial({color:0xf2f1ec,roughness:.45}),
   bottle:new THREE.MeshStandardMaterial({color:0x7cbbe8,roughness:.12,transparent:true,opacity:.55,depthWrite:false}),
   cap:new THREE.MeshStandardMaterial({color:0x2a6fb8,roughness:.4}),
-  disp:new THREE.MeshStandardMaterial({color:0x8e9294,roughness:.5}),
+  disp:new THREE.MeshStandardMaterial({color:0x606467,roughness:.5}),
   panel:new THREE.MeshStandardMaterial({color:0xb9bcbd,roughness:.6,metalness:.2}),
   red:new THREE.MeshStandardMaterial({color:0xc8302c,roughness:.5}),
   blue:new THREE.MeshStandardMaterial({color:0x2f6fb6,roughness:.5}),
