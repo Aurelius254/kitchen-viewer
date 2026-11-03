@@ -199,7 +199,6 @@ const M={
   top:new THREE.MeshStandardMaterial({map:graniteTex,roughness:.25,metalness:.05}),
   fsteel:new THREE.MeshStandardMaterial({map:fridgeTex,roughness:.36,metalness:.35}),
   lcd:new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xe6eeff,emissiveIntensity:.9}),
-  handle:new THREE.MeshStandardMaterial({color:0x161718,roughness:.3,metalness:.2}),
   steel:new THREE.MeshStandardMaterial({color:0xcfd2d4,roughness:.32,metalness:.55}),
   steelDark:new THREE.MeshStandardMaterial({color:0x9a9fa2,roughness:.4,metalness:.5}),
   chrome:new THREE.MeshStandardMaterial({color:0xe6e8ea,roughness:.15,metalness:.8}),
@@ -216,6 +215,7 @@ const M={
   frame:new THREE.MeshStandardMaterial({color:0x6a5f55,roughness:.7}),
   outside:new THREE.MeshStandardMaterial({color:0x8d8f8c,roughness:.95}),
 };
+M.handle=M.top;   // handles use the exact worktop finish (black granite)
 
 /* B: box by min corner (x0,y0,z0) and size */
 function B(p,x0,y0,z0,w,h,d,mat,cast=true){
