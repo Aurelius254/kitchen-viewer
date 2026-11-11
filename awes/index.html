@@ -171,18 +171,18 @@ const PALETTES={
   'white':{name:'White', lower:'white', upper:'white', tall:'white', island:'white'},
   'brown-white':{name:'Brown & white', lower:'walnut', upper:'white', tall:'walnut', island:'walnut'},
   'green-white':{name:'Green & white', lower:'green', upper:'white', tall:'white', island:'green'},
-  'brown-green':{name:'Brown & green', lower:'green', upper:'oak', tall:'oak', island:'oak'}
+  'brown-green':{name:'Brown & green', lower:'green', upper:'walnut', tall:'walnut', island:'walnut'}
 };
 const FIN={
   green:{modern:'#8b9a7f', med:'#7b8a5f', farm:'#86998a'},
   white:{modern:'#ecebe6', med:'#efe6d4', farm:'#f2eee5'},
-  walnut:{modern:['#4a3122','#2f1d10','#6b4834'], med:['#7a5233','#56371f','#9b6d46'], farm:['#86603f','#5f4127','#a87e56']},
+  walnut:{modern:['#8b5d3c','#664129','#ad7d54'], med:['#8b5d3c','#664129','#ad7d54'], farm:['#8b5d3c','#664129','#ad7d54']},
   oak:{modern:['#c09b6b','#9a7749','#dcbb8b'], med:['#b98f5e','#93703f','#d4ad7c'], farm:['#c29c69','#9b7848','#dcbb89']}
 };
 const FIN_NAME={
   green:{modern:'sage green matte', med:'olive green', farm:'sage green'},
   white:{modern:'warm white', med:'chalk white', farm:'cream white'},
-  walnut:{modern:'dark walnut', med:'chestnut wood', farm:'mid-brown oak'},
+  walnut:{modern:'warm walnut', med:'warm walnut', farm:'warm walnut'},
   oak:{modern:'light oak', med:'light oak', farm:'light oak'}
 };
 const state={style:'modern', palette:'green-white', island:'stools'};
@@ -340,6 +340,23 @@ function skyTex(){
   });
 }
 
+function majolicaTex(){
+  return ctex('majolica',1024,[.22,.22],(g,s)=>{
+    const W1='#f7f8fb', b1='#1d4c9c', b2='#4f7fcf';
+    g.fillStyle=W1; g.fillRect(0,0,s,s);
+    for(const y0 of [0,s-72]){g.fillStyle=b1; g.fillRect(0,y0+10,s,8); g.fillRect(0,y0+54,s,8);
+      for(let x=0;x<s;x+=42){g.fillStyle=b2; g.beginPath(); g.arc(x+21,y0+36,12,0,7); g.fill(); g.fillStyle=W1; g.beginPath(); g.arc(x+21,y0+36,5,0,7); g.fill();}}
+    const cx=s/2, cy=s/2;
+    for(const [r,c] of [[300,b1],[284,W1],[252,b2],[232,W1]]){g.fillStyle=c; g.beginPath(); g.arc(cx,cy,r,0,7); g.fill();}
+    for(let k=0;k<16;k++){const a=k*Math.PI/8; g.fillStyle=k%2?b1:b2; g.beginPath(); g.ellipse(cx+Math.cos(a)*150,cy+Math.sin(a)*150,72,26,a,0,7); g.fill();}
+    for(const [r,c] of [[78,b1],[48,W1],[26,b2]]){g.fillStyle=c; g.beginPath(); g.arc(cx,cy,r,0,7); g.fill();}
+    g.strokeStyle=b1; g.lineWidth=10; g.lineCap='round';
+    for(const [qx,qy] of [[0,0],[1,0],[0,1],[1,1]]){const ox=qx?s-140:140, oy=qy?s-170:170;
+      for(let k=0;k<3;k++){g.beginPath(); g.arc(ox,oy,26+k*26,k*.8,k*.8+3.8); g.stroke();}
+      g.fillStyle=b2; for(let k=0;k<6;k++){g.beginPath(); g.ellipse(ox+(rnd()-.5)*170,oy+(rnd()-.5)*170,18,8,rnd()*3,0,7); g.fill();}}
+  });
+}
+
 /* ---------------------------------------------------------------- materials */
 let MATS=[];
 function std(o){const m=new THREE.MeshStandardMaterial(Object.assign({envMapIntensity:.45},o)); MATS.push(m); return m;}
@@ -387,7 +404,17 @@ function makeMats(){
     rattan:std({map:rattanTex(),roughness:.8}), linen:std({color:'#e8e0d0',roughness:.9}),
     jarGlass:std({color:'#e9eef0',roughness:.05,transparent:true,opacity:.35,depthWrite:false}),
     jarFill:std({color:'#9b6a3d',roughness:.8}), plate:std({color:'#f3f1ec',roughness:.3}),
-    socket:std({color:state.style==='modern'?'#1f1f1f':'#f4f2ee',roughness:.4})
+    socket:std({color:state.style==='modern'?'#1f1f1f':'#f4f2ee',roughness:.4}),
+    fsteel:std({color:'#cdd1d4',metalness:.85,roughness:.3}),
+    sinkSteel:std({color:'#d2d7db',metalness:.7,roughness:.34,side:THREE.DoubleSide,vertexColors:true,envMapIntensity:.3}),
+    sinkCeramic:std({color:'#f3f1ec',roughness:.2,side:THREE.DoubleSide,vertexColors:true}),
+    display:basic({color:'#a6e8ff'}), scrA:basic({color:'#f2c36b'}), scrB:basic({color:'#ffffff'}), scrC:basic({color:'#8fd1ff'}),
+    ovenGlow:std({color:'#140b05',emissive:'#ff8a36',emissiveIntensity:.22,roughness:.1}),
+    teal:std({color:'#86cdc4',roughness:.2,metalness:.05}), cream:std({color:'#efe8d6',roughness:.35}),
+    majolica:std({map:(()=>{const t=majolicaTex(); t.offset.set(.5,.5); return t;})(),roughness:.18}), greyHandle:std({color:'#5d6063',roughness:.5}),
+    beans:std({color:'#4a2a17',roughness:.6}), espresso:std({color:'#2e1a0e',roughness:.15}), crema:std({color:'#bf8752',roughness:.4}),
+    copper:std({color:'#b9724a',metalness:.9,roughness:.32}), enamel:std({color:state.palette.includes('green')?'#86998a':'#e9e3d6',roughness:.25}),
+    board:std({map:woodTex('oak',state.style),roughness:.6}), tintHop:std({color:'#3b3f42',roughness:.05,metalness:.2,transparent:true,opacity:.6})
   };
   M.plinth=M.plinth||null;
 }
@@ -416,6 +443,35 @@ function plane(p,w,h,mat,x,y,z,rx=0,ry=0){
 function tube(p,pts,r,mat,seg=48){
   const m=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(q=>new THREE.Vector3(...q))),seg,r,12,false),mat);
   m.castShadow=true; p.add(m); return m;
+}
+function rrShape(w,h,r,asPath){
+  const s=asPath?new THREE.Path():new THREE.Shape(), x=-w/2, y=-h/2; r=Math.max(.0008,Math.min(r,w/2-1e-4,h/2-1e-4));
+  s.moveTo(x+r,y); s.lineTo(x+w-r,y); s.absarc(x+w-r,y+r,r,-Math.PI/2,0,false); s.lineTo(x+w,y+h-r); s.absarc(x+w-r,y+h-r,r,0,Math.PI/2,false);
+  s.lineTo(x+r,y+h); s.absarc(x+r,y+h-r,r,Math.PI/2,Math.PI,false); s.lineTo(x,y+r); s.absarc(x+r,y+r,r,Math.PI,1.5*Math.PI,false); return s;
+}
+// rounded box centred at x,y,z: rc = corner radius seen from the front, rb = round-over on the front and back edges
+function rbox(p,w,h,d,rc,rb,mat,x,y,z){
+  const g=new THREE.ExtrudeGeometry(rrShape(w-2*rb,h-2*rb,Math.max(.0015,rc-rb)),{depth:Math.max(d-2*rb,.001),bevelEnabled:rb>0,bevelThickness:rb,bevelSize:rb,bevelSegments:3,curveSegments:8});
+  g.translate(0,0,-(d-2*rb)/2);
+  const m=new THREE.Mesh(g,mat); m.position.set(x,y,z); m.castShadow=true; m.receiveShadow=true; p.add(m); return m;
+}
+// flat ring (rounded outer and inner outlines) lying on y, centred at cx,cz
+function ringPlate(p,cx,y,cz,ow,od,orad,iw,id,irad,t,mat){
+  const sh=rrShape(ow,od,orad); sh.holes.push(rrShape(iw,id,irad,true));
+  const g=new THREE.ExtrudeGeometry(sh,{depth:t,bevelEnabled:false,curveSegments:10}); g.rotateX(-Math.PI/2);
+  const m=new THREE.Mesh(g,mat); m.position.set(cx,y,cz); m.castShadow=true; m.receiveShadow=true; p.add(m); return m;
+}
+// open-top bowl: rounded-rectangle walls that curve into a flat floor
+function bowl(p,cx,cz,ytop,w,d,depth,r,mat,rb=.035){
+  const rr=(cw,cd,cr,n=8)=>{const out=[]; for(const [qx,qz,a0] of [[1,1,0],[-1,1,90],[-1,-1,180],[1,-1,270]]){const ox=cx+qx*(cw/2-cr), oz=cz+qz*(cd/2-cr);
+    for(let i=0;i<n;i++){const a=(a0+90*i/(n-1))*Math.PI/180; out.push([ox+cr*Math.cos(a),oz+cr*Math.sin(a)]);}} return out;};
+  const prof=[[0,0],[0,depth-rb]]; for(let i=1;i<=6;i++){const a=Math.PI/2*i/6; prof.push([rb-rb*Math.cos(a),depth-rb+rb*Math.sin(a)]);}
+  const pos=[], idx=[], col=[]; let n=0;
+  prof.forEach(([ins,dn])=>{const ring=rr(w-2*ins,d-2*ins,Math.max(r-ins,.004)); n=ring.length; const sh=1-.5*Math.pow(dn/depth,.7); ring.forEach(([x,z])=>{pos.push(x,ytop-dn,z); col.push(sh,sh,sh);});});
+  for(let k=0;k<prof.length-1;k++)for(let i=0;i<n;i++){const j=(i+1)%n; idx.push(k*n+i,k*n+j,(k+1)*n+j, k*n+i,(k+1)*n+j,(k+1)*n+i);}
+  const c=pos.length/3; pos.push(cx,ytop-depth,cz); col.push(.48,.48,.48); const L=(prof.length-1)*n; for(let i=0;i<n;i++)idx.push(L+i,L+(i+1)%n,c);
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.setIndex(idx); g.computeVertexNormals();
+  const m=new THREE.Mesh(g,mat); m.receiveShadow=true; m.castShadow=true; p.add(m); return m;
 }
 // a run of units: local x along the run, back against the wall at z=0, fronts facing +z
 function runGroup(parent,x,z,rotY){const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=rotY; parent.add(g); return g;}
@@ -447,10 +503,9 @@ function pull(p,cx,cy,z,orient,len){
 /* ---------------------------------------------------------------- base & upper units */
 function baseRun(p,x0,secs,fin,o={}){
   const cd=o.cd??CD, topY=WT-STY.topT, len=secs.reduce((a,s)=>a+s.w,0), fm=finMat(fin);
-  B(p,x0,PL,0,len,topY-PL,cd-.002,fm);
   B(p,x0+.005,0,0,len-.01,PL,cd-.06,M.plinth||fm);
   let x=x0;
-  for(const s of secs){baseSection(p,x,s,cd,topY,fm); x+=s.w;}
+  for(const s of secs){B(p,x,PL,0,s.w,(s.t==='sink'?.64:topY)-PL,cd-.002,fm); baseSection(p,x,s,cd,topY,fm); x+=s.w;}
   return len;
 }
 function baseSection(p,x,s,cd,topY,fm){
@@ -464,11 +519,14 @@ function baseSection(p,x,s,cd,topY,fm){
   }
   if(s.t==='oven'){
     front(p,x,y0,w,.15,z,fm); dpull(x,y0,w,.15);
-    const oy=y0+.16, oh=y1-oy-.01;
-    B(p,x+.008,oy,z-.01,w-.016,oh,.03,s.dark?M.blackGlass:M.steel);
-    B(p,x+.06,oy+.06,z+.021,w-.12,oh-.2,.004,M.blackGlass);
-    C(p,.008,w-.12,x+w/2,oy+oh-.07,z+.05,M.chrome,'x');
-    for(let i=0;i<4;i++)C(p,.014,.02,x+.1+i*(w-.2)/3,oy+oh-.025,z+.03,M.black,'z');
+    const oy=y0+.16, oh=y1-oy-.01, ox=x+.008, ow=w-.016, cx=x+w/2;
+    B(p,ox,oy,z-.01,ow,oh,.03,M.fsteel);
+    B(p,ox+.012,oy+oh-.085,z+.02,ow-.024,.072,.004,M.blackGlass);
+    B(p,cx-.045,oy+oh-.063,z+.024,.09,.03,.001,M.display);
+    for(const dx of [-.2,-.12,.12,.2]){C(p,.017,.026,cx+dx,oy+oh-.049,z+.036,M.chrome,'z'); B(p,cx+dx-.002,oy+oh-.04,z+.049,.004,.013,.002,M.black);}
+    B(p,ox+.012,oy+.012,z+.02,ow-.024,oh-.11,.006,M.blackGlass);
+    B(p,ox+.07,oy+.06,z+.026,ow-.14,oh-.25,.002,M.ovenGlow,false);
+    C(p,.008,ow-.1,cx,oy+oh-.135,z+.065,M.chrome,'x'); for(const dx of [-(ow/2-.07),ow/2-.07])C(p,.006,.04,cx+dx,oy+oh-.135,z+.045,M.chrome,'z');
     return;
   }
   if(s.t==='dw'){front(p,x,y0,w,hgt,z,fm); dpull(x,y0,w,hgt); return;}
@@ -610,12 +668,14 @@ function buildKitchen(){
   const hx=1.66;
   B(gw,hx-.29,WT,.06,.58,.008,.5,M.blackGlass);
   for(const [dx,dz,r] of [[-.13,.17,.045],[.13,.17,.035],[-.13,.42,.035],[.13,.42,.05]]){
-    C(gw,r,.012,hx+dx,WT+.014,dz,M.black); C(gw,r*.55,.008,hx+dx,WT+.022,dz,M.steelDark);
+    C(gw,r,.012,hx+dx,WT+.014,dz,M.black); C(gw,r*.55,.01,hx+dx,WT+.024,dz,state.style==='modern'?M.black:M.hw);
     for(let k=0;k<4;k++){const a=k*Math.PI/2+.4; const b=B(gw,hx+dx-.005,WT+.02,dz-.002,r*1.6,.008,.008,M.black); b.position.set(hx+dx+Math.cos(a)*r*.9,WT+.026,dz+Math.sin(a)*r*.9); b.rotation.y=-a;}
   }
   for(let k=0;k<4;k++)C(gw,.014,.02,hx-.2+k*.13,WT+.012,.56,M.steelDark);
   // a pot on the hob
-  C(gw,.11,.13,hx+.13,WT+.085,.42,M.steel,null,28); C(gw,.115,.012,hx+.13,WT+.155,.42,M.steelDark,null,28);
+  if(state.style==='farm'){rbox(gw,.24,.13,.24,.1,.02,M.enamel,hx+.13,WT+.1,.42); C(gw,.02,.025,hx+.13,WT+.18,.42,M.hw); for(const dx of [-.13,.13])B(gw,hx+.13+dx-.015,WT+.12,.41,.03,.02,.02,M.enamel);}
+  else if(state.style==='med'){C(gw,.11,.12,hx+.13,WT+.09,.42,M.copper,null,32); C(gw,.115,.01,hx+.13,WT+.155,.42,M.copper,null,32); tube(gw,[[hx+.24,WT+.13,.42],[hx+.32,WT+.135,.42],[hx+.38,WT+.14,.42]],.008,M.copper,8);}
+  else {C(gw,.1,.1,hx+.13,WT+.075,.42,M.steel,null,32); C(gw,.105,.01,hx+.13,WT+.13,.42,M.blackGlass,null,32); C(gw,.012,.02,hx+.13,WT+.145,.42,M.black);}
   // hood & uppers
   hood(gw,hx);
   const st=state.style;
@@ -640,7 +700,10 @@ function buildKitchen(){
   const tallTop=upTop, tf=finMat(PAL.tall);
   B(gw,-.6,PL,0,.6,tallTop-PL,CD-.002,tf); B(gw,-.595,0,0,.59,PL,CD-.06,M.plinth||tf);
   front(gw,-.6,PL,.6,.95,CD,tf); pull(gw,-.6+.045,STY.pull==='bar'?PL+.95-.2:PL+.95-.08,CD+FT,'v',.3);
-  B(gw,-.58,1.08,CD-.01,.56,.37,.03,M.steelDark); B(gw,-.56,1.11,CD+.02,.38,.3,.004,M.blackGlass); B(gw,-.16,1.11,CD+.02,.12,.3,.004,M.black);
+  B(gw,-.585,1.07,CD-.01,.57,.39,.03,M.fsteel); B(gw,-.57,1.085,CD+.02,.41,.36,.005,M.blackGlass); B(gw,-.54,1.12,CD+.025,.34,.27,.002,M.ovenGlow,false);
+  B(gw,-.155,1.085,CD+.02,.135,.36,.005,M.black); B(gw,-.14,1.38,CD+.026,.105,.04,.001,M.display,false);
+  for(let r=0;r<3;r++)for(let c=0;c<3;c++)B(gw,-.138+c*.035,1.17+r*.05,CD+.026,.025,.03,.002,M.steelDark);
+  B(gw,-.18,1.12,CD+.026,.012,.27,.012,M.chrome);
   front(gw,-.6,1.48,.6,tallTop-1.48,CD,tf); pull(gw,-.6+.045,1.48+.18,CD+FT,'v',.3);
   // fridge housing
   B(gw,-1.5,0,0,.02,tallTop,CD+FT,tf); B(gw,-1.5,1.92,0,.9,tallTop-1.92,CD-.002,tf);
@@ -678,6 +741,7 @@ function hood(p,hx){
     B(p,hx-.3,1.98,0,.6,.07,.32,M.black);
     const g=B(p,hx-.3,1.62,0,.6,.42,.012,M.blackGlass); g.rotation.x=-.35; g.position.z=.28; g.position.y=1.82;
     B(p,hx-.3,1.6,.15,.6,.02,.27,M.steelDark);
+    for(const dx of [-.15,.15])C(p,.022,.003,hx+dx,1.598,.3,M.bulb).castShadow=false;
     return;
   }
   const mat=k==='plaster'?std({map:wallTex(),color:'#fbf6ee',roughness:.95}):finMat('white');
@@ -686,30 +750,36 @@ function hood(p,hx){
   B(p,hx-.2,2.29,0,.4,(STY.upperTop>2.5?H:H)-2.29-(STY.ceiling==='beams'?.0:0),.22,mat);
   B(p,hx-.48,1.62,0,.96,.1,.31,k==='plaster'?M.darkWood:M.shelfWood);
   B(p,hx-.25,1.6,.05,.5,.02,.24,M.steelDark);
+  for(const dx of [-.15,.15])C(p,.022,.003,hx+dx,1.598,.18,M.bulb).castShadow=false;
 }
 function fridge(p,x0){
-  const w=.84, h=1.86, d=.68;
-  B(p,x0,.02,.0,w,h,d-.04,M.steelDark);
-  B(p,x0,.75,d-.04,w/2-.003,h-.73,.04,M.steel); B(p,x0+w/2+.003,.75,d-.04,w/2-.003,h-.73,.04,M.steel);
-  B(p,x0,.03,d-.04,w,.7,.04,M.steel);
-  C(p,.009,.6,x0+w/2-.04,1.3,d+.03,M.chrome); C(p,.009,.6,x0+w/2+.04,1.3,d+.03,M.chrome);
-  C(p,.009,.5,x0+w/2,.64,d+.03,M.chrome,'x');
-  B(p,x0+.08,1.45,d,.14,.2,.004,M.blackGlass);
+  const w=.84, h=1.86, d=.68, fz=d-.05;
+  B(p,x0,.02,0,w,h,fz,M.steelDark);
+  B(p,x0+.004,.77,fz,w/2-.006,h-.75,.045,M.fsteel); B(p,x0+w/2+.002,.77,fz,w/2-.006,h-.75,.045,M.fsteel);
+  B(p,x0+.004,.05,fz,w-.008,.7,.045,M.fsteel);
+  for(const hx of [x0+w/2-.035,x0+w/2+.035]){C(p,.011,.72,hx,1.32,d+.04,M.chrome); for(const hy of [.99,1.65])C(p,.007,.045,hx,hy,d+.018,M.chrome,'z');}
+  C(p,.011,.56,x0+w/2,.66,d+.04,M.chrome,'x'); for(const dx of [-.25,.25])C(p,.007,.045,x0+w/2+dx,.66,d+.018,M.chrome,'z');
+  B(p,x0+.08,1.05,d-.004,.2,.34,.004,M.blackGlass);          // water and ice bay
+  B(p,x0+.1,1.07,d-.03,.16,.24,.026,M.black);
+  C(p,.012,.04,x0+.18,1.27,d-.015,M.chrome);
+  B(p,x0+.095,1.345,d,.17,.035,.001,M.display);
+  B(p,x0+.06,.02,fz-.01,w-.12,.025,.02,M.black);
 }
 function sink(p,sc,ox0,ox1,oz0,oz1,topY){
-  const st=STY.sink;
+  const st=STY.sink, cz=(oz0+oz1)/2;
   if(st==='apron'){
-    const w=ox1-ox0, sy=WT-.24;
-    B(p,ox0,sy,oz0,w,.02,oz1-oz0,M.ceramic);
-    B(p,ox0,sy,oz0,.03,WT-sy,oz1-oz0,M.ceramic); B(p,ox1-.03,sy,oz0,.03,WT-sy,oz1-oz0,M.ceramic);
-    B(p,ox0,sy,oz0,w,WT-sy,.03,M.ceramic); B(p,ox0,sy,oz1-.04,w,WT-sy,.04,M.ceramic);
-    C(p,.025,.004,sc,sy+.022,(oz0+oz1)/2,M.steelDark);
+    const w=ox1-ox0, sy=WT-.25, bd=oz1-oz0;
+    B(p,ox0,sy,oz1-.045,w,WT-sy,.045,M.ceramic);                       // apron front
+    B(p,ox0,sy,oz0,.03,WT-sy,bd-.04,M.ceramic); B(p,ox1-.03,sy,oz0,.03,WT-sy,bd-.04,M.ceramic); B(p,ox0,sy,oz0,w,WT-sy,.03,M.ceramic);
+    const iw=w-.07, id=bd-.085, icz=oz0+.035+id/2;
+    ringPlate(p,sc,WT-.004,icz,w,bd-.01,.01,iw,id,.045,.004,M.ceramic);
+    bowl(p,sc,icz,WT-.002,iw,id,.21,.045,M.sinkCeramic);
+    C(p,.03,.004,sc,WT-.209,icz,M.steelDark,null,24); C(p,.02,.005,sc,WT-.208,icz,M.black,null,24);
   } else {
-    const sy=topY-.19;
-    B(p,ox0,sy,oz0,ox1-ox0,.004,oz1-oz0,M.steel);
-    B(p,ox0,sy,oz0,.003,topY-sy,oz1-oz0,M.steel); B(p,ox1-.003,sy,oz0,.003,topY-sy,oz1-oz0,M.steel);
-    B(p,ox0,sy,oz0,ox1-ox0,topY-sy,.003,M.steel); B(p,ox0,sy,oz1-.003,ox1-ox0,topY-sy,.003,M.steel);
-    C(p,.025,.004,sc,sy+.006,(oz0+oz1)/2,M.steelDark);
+    const iw=ox1-ox0-.04, id=oz1-oz0-.04;
+    bowl(p,sc,cz,WT,iw,id,.2,.045,M.sinkSteel);
+    ringPlate(p,sc,WT,cz,ox1-ox0+.04,oz1-oz0+.04,.012,iw,id,.045,.004,M.steel);
+    C(p,.032,.004,sc,WT-.197,cz,M.chrome,null,24); C(p,.022,.005,sc,WT-.196,cz,M.steelDark,null,24);
   }
   // tap at the back
   const tm=STY.pull==='bar'?M.hw:M.hw, z=.035, y=WT;
@@ -727,13 +797,58 @@ function sink(p,sc,ox0,ox1,oz0,oz1,topY){
   }
 }
 function coffeeStation(p,y){
-  // coffee maker
-  B(p,.48,y,.12,.2,.34,.24,M.black); B(p,.5,y+.02,.36,.16,.03,.03,M.steelDark);
-  C(p,.06,.12,.58,y+.08,.3,M.jarGlass); C(p,.055,.05,.58,y+.03,.3,std({color:'#3a2416',roughness:.4}));
-  // blender
-  B(p,.18,y,.2,.15,.12,.15,M.black); C(p,.055,.24,.255,y+.24,.275,M.jarGlass,null,20,.07); C(p,.075,.02,.255,y+.37,.275,M.black);
-  // canisters
-  for(let i=0;i<3;i++)C(p,.045,.16-i*.025,.08+i*.0,y+.08-i*.012,.12+i*.11,state.style==='modern'?M.black:M.potWhite);
+  const cx=.44, zb=.09;
+  if(state.style==='modern')espressoModern(p,cx,y,zb); else if(state.style==='farm')espressoRetro(p,cx,y,zb); else espressoMajolica(p,cx,y,zb);
+  // coffee beans in a glass jar with a wooden lid
+  C(p,.05,.17,.1,y+.085,.17,M.jarGlass,null,28); C(p,.046,.13,.1,y+.066,.17,M.beans,null,24); C(p,.053,.022,.1,y+.181,.17,M.board,null,28);
+  if(state.style!=='med'){const b=B(p,.69,y,.02,.28,.4,.02,M.board); b.position.set(.71,y+.2,.06); b.rotation.x=-.18; b.rotation.y=Math.PI/2;}
+}
+function cups(p,xs,y,z,mat){for(const x of xs){C(p,.026,.055,x,y+.028,z,mat,null,20,.029); C(p,.023,.022,x,y+.017,z,M.espresso,null,20); C(p,.024,.004,x,y+.03,z,M.crema,null,20);}}
+function espressoModern(p,cx,y,zb){
+  const S=M.fsteel, w=.37, d=.38, zc=zb+d/2;
+  rbox(p,w,.07,d,.02,.01,S,cx,y+.035,zc);
+  B(p,cx-w/2+.04,y+.07,zb+d-.16,w-.08,.004,.14,M.steelDark);
+  rbox(p,w,.28,.19,.02,.01,S,cx,y+.07+.14,zb+.095);
+  rbox(p,w,.09,d,.02,.012,S,cx,y+.35+.045,zc);
+  B(p,cx-.065,y+.36,zb+d-.003,.13,.07,.004,M.blackGlass);
+  [M.scrA,M.scrB,M.scrC,M.scrB].forEach((m,i)=>B(p,cx-.055+i*.029,y+.38,zb+d+.002,.02,.026,.001,m,false));
+  C(p,.05,.14,cx-.11,y+.44+.07,zb+.13,M.tintHop,null,32,.075); C(p,.044,.09,cx-.11,y+.44+.045,zb+.13,M.beans,null,24,.06); C(p,.078,.02,cx-.11,y+.44+.15,zb+.13,M.black,null,32);
+  C(p,.04,.03,cx+.03,y+.335,zb+d-.09,M.chrome); C(p,.035,.035,cx+.03,y+.3,zb+d-.09,M.chrome);
+  tube(p,[[cx+.03,y+.3,zb+d-.06],[cx+.04,y+.295,zb+d+.03],[cx+.05,y+.29,zb+d+.11]],.011,M.black,16);
+  C(p,.013,.04,cx-.11,y+.32,zb+d-.06,M.steelDark);
+  tube(p,[[cx+.16,y+.34,zb+d-.06],[cx+.17,y+.26,zb+d-.03],[cx+.175,y+.17,zb+d-.02]],.006,M.chrome,16);
+  cups(p,[cx+.005,cx+.055],y+.074,zb+d-.09,M.jarGlass);
+  C(p,.036,.1,cx+.27,y+.05,zb+.25,M.fsteel,null,28,.031); tube(p,[[cx+.3,y+.08,zb+.25],[cx+.33,y+.06,zb+.25],[cx+.3,y+.03,zb+.25]],.006,M.fsteel,12);
+}
+function espressoRetro(p,cx,y,zb){
+  const Tq=M.teal, w=.5, d=.42;
+  rbox(p,w,.06,d,.02,.01,Tq,cx,y+.03,zb+d/2);
+  rbox(p,w,.36,.3,.035,.015,Tq,cx,y+.06+.18,zb+.15);
+  B(p,cx-w/2+.04,y+.08,zb+.3,w-.08,.16,.004,M.cream);
+  B(p,cx-w/2+.03,y+.06,zb+.3,w-.06,.012,d-.31,M.chrome);
+  C(p,.046,.012,cx,y+.34,zb+.306,M.chrome,'z',32); C(p,.037,.004,cx,y+.34,zb+.313,M.ceramic,'z',32); B(p,cx-.002,y+.34,zb+.316,.004,.03,.001,M.black,false);
+  for(const dx of [-.19,.19]){C(p,.024,.04,cx+dx,y+.34,zb+.32,M.black,'z',24); S(p,.02,cx+dx,y+.34,zb+.345,M.black);}
+  for(const dx of [-.12,-.09,.09,.12])B(p,cx+dx-.011,y+.325,zb+.3,.022,.03,.008,M.ceramic);
+  for(const dx of [-.11,.11]){C(p,.042,.04,cx+dx,y+.255,zb+.33,M.chrome); C(p,.034,.035,cx+dx,y+.22,zb+.33,M.chrome);
+    tube(p,[[cx+dx,y+.22,zb+.36],[cx+dx+.05,y+.215,zb+.43],[cx+dx+.1,y+.21,zb+.48]],.012,M.black,16);}
+  cups(p,[cx-.11,cx+.11],y+.072,zb+.34,M.ceramic);
+  tube(p,[[cx-.235,y+.31,zb+.31],[cx-.245,y+.22,zb+.35],[cx-.25,y+.13,zb+.36]],.006,M.chrome,16);
+  for(const [a,b] of [[[cx-.22,y+.46,zb+.04],[cx+.22,y+.46,zb+.04]],[[cx-.22,y+.46,zb+.27],[cx+.22,y+.46,zb+.27]],[[cx-.22,y+.46,zb+.04],[cx-.22,y+.46,zb+.27]],[[cx+.22,y+.46,zb+.04],[cx+.22,y+.46,zb+.27]]])tube(p,[a,[(a[0]+b[0])/2,a[1],(a[2]+b[2])/2],b],.006,M.chrome,8);
+  for(const [dx,dz] of [[-.22,.04],[.22,.04],[-.22,.27],[.22,.27]])C(p,.005,.04,cx+dx,y+.44,zb+dz,M.chrome);
+  for(let i=0;i<5;i++)C(p,.032,.045,cx-.16+i*.08,y+.442,zb+.15+(i%2)*.06,M.ceramic,null,20,.036);
+}
+function espressoMajolica(p,cx,y,zb){
+  const Mj=M.majolica, w=.23, d=.35;
+  rbox(p,w+.02,.025,d,.012,.006,M.chrome,cx,y+.0125,zb+d/2);
+  B(p,cx-w/2+.02,y+.025,zb+d-.12,w-.04,.006,.1,M.steelDark);
+  rbox(p,w-.02,.22,.07,.012,.004,M.jarGlass,cx,y+.135,zb+.04);
+  rbox(p,w,.22,.14,.02,.008,Mj,cx,y+.135,zb+.145);
+  rbox(p,w,.12,d,.055,.02,Mj,cx,y+.305,zb+d/2);
+  B(p,cx-w/2,y+.243,zb+.08,w,.004,d-.08,M.chrome,false);
+  C(p,.034,.03,cx,y+.23,zb+d-.06,M.chrome); C(p,.03,.025,cx,y+.205,zb+d-.06,M.chrome);
+  tube(p,[[cx,y+.205,zb+d-.03],[cx,y+.2,zb+d+.06],[cx,y+.195,zb+d+.14]],.012,M.greyHandle,16);
+  cups(p,[cx],y+.031,zb+d-.06,M.ceramic);
+  tube(p,[[cx+.1,y+.27,zb+d-.1],[cx+.12,y+.2,zb+d-.08],[cx+.12,y+.12,zb+d-.07]],.005,M.chrome,12);
 }
 function island(K){
   const stools=state.island==='stools', fin=PAL.island, fm=finMat(fin);
