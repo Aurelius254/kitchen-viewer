@@ -261,6 +261,9 @@ function baseUnit(w,sections,opts={}){
   const g=new THREE.Group(), h=.9, top=.03, pl=.1, cd=.58;
   B(g,0,0,0,w,pl,cd-.06,M.plinth);
   B(g,0,pl,0,w,(opts.sink?.64:h-top)-pl,cd,M.carc);
+  if(opts.sink){ // keep the cabinet closed around the bowl: full-height sides and back
+    B(g,0,pl,0,.018,h-top-pl,cd,M.carc); B(g,w-.018,pl,0,.018,h-top-pl,cd,M.carc); B(g,.018,pl,0,w-.036,h-top-pl,.018,M.carc);
+  }
   if(!opts.sink)B(g,-.005,h-top,0,w+.01,top,.62,M.top);
   else{ // worktop in four pieces around the bowl opening (opening .40 wide x .36 deep)
     const ox0=opts.sink.x+.02, ox1=opts.sink.x+.42, oz0=.13, oz1=.49, L=-.005, R=w+.005;
