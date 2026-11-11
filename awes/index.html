@@ -66,6 +66,7 @@ aside h2{margin:0 0 8px;font-size:11px;font-weight:600;letter-spacing:.09em;text
 .seg button[aria-checked="true"]{background:var(--accent);color:var(--accent-fg)}
 .pdf{display:flex;align-items:center;justify-content:center;gap:8px;font:600 14px var(--sans);color:var(--accent-fg);background:var(--accent);border:0;border-radius:10px;padding:12px;cursor:pointer}
 .pdf:hover{filter:brightness(1.07)}
+.pdf[data-studio="1"]::after{content:"HD";white-space:nowrap;font:600 10.5px var(--sans);letter-spacing:.04em;text-transform:uppercase;background:var(--accent-fg);color:var(--accent);border-radius:99px;padding:2px 7px;margin-left:4px}
 .pdf:disabled{opacity:.6;cursor:progress}
 .note{margin:6px 0 0;font-size:12px;color:var(--muted)}
 dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;font-size:13px}
@@ -411,6 +412,7 @@ function makeMats(){
     sinkCeramic:std({color:'#f3f1ec',roughness:.2,side:THREE.DoubleSide,vertexColors:true}),
     display:basic({color:'#a6e8ff'}), scrA:basic({color:'#f2c36b'}), scrB:basic({color:'#ffffff'}), scrC:basic({color:'#8fd1ff'}),
     ovenGlow:std({color:'#140b05',emissive:'#ff8a36',emissiveIntensity:.22,roughness:.1}),
+    mattBlack:std({color:'#1c1c1d',roughness:.55,metalness:.15}), bronze:std({color:'#b07a52',metalness:.9,roughness:.32}),
     teal:std({color:'#86cdc4',roughness:.2,metalness:.05}), cream:std({color:'#efe8d6',roughness:.35}),
     majolica:std({map:(()=>{const t=majolicaTex(); t.offset.set(.5,.5); return t;})(),roughness:.18}), greyHandle:std({color:'#5d6063',roughness:.5}),
     beans:std({color:'#4a2a17',roughness:.6}), espresso:std({color:'#2e1a0e',roughness:.15}), crema:std({color:'#bf8752',roughness:.4}),
@@ -603,7 +605,7 @@ function buildRoom(){
   plane(R,W,D,M.floor,W/2,0,D/2,-Math.PI/2);
   // walls (inner faces at x=0, x=W, z=0, z=D), openings cut by building around them
   const gN=new THREE.Group(), gS=new THREE.Group(), gE=new THREE.Group(), gW=new THREE.Group();
-  WALLS={north:gN,south:gS,east:gE,west:gW}; [gN,gS,gE,gW].forEach(g=>R.add(g));
+  WALLS={north:gN,south:gS,east:gE,west:gW}; [gN,gS,gE,gW].forEach(g=>R.add(g)); gN.name='wall_north'; gS.name='wall_south'; gE.name='wall_east'; gW.name='wall_west';
   for(const [a,ya,b,yb] of [[-T,0,.40,H],[.40,0,2.17,1.07],[.40,2.62,2.17,H],[2.17,0,2.70,H],[2.70,2.10,3.67,H],[3.67,0,W+T,H]])B(gN,a,ya,-T,b-a,yb-ya,T,M.wall);
   for(const [a,ya,b,yb] of [[-T,0,2.70,H],[2.70,0,3.67,1.07],[2.70,2.62,3.67,H],[3.67,0,W+T,H]])B(gS,a,ya,D,b-a,yb-ya,T,M.wall);
   B(gW,-T,0,0,T,H,D,M.wall);
@@ -645,7 +647,7 @@ function buildRoom(){
   for(const z of [1.0,2.45])B(gW,.012,1.12,z-.043,.01,.086,.086,M.socket);
   for(const x of [1.16,2.26])B(gS,x-.043,.3,D-.012,.086,.086,.012,M.socket);
   // ceiling
-  CEIL=new THREE.Group(); R.add(CEIL);
+  CEIL=new THREE.Group(); CEIL.name='ceiling'; R.add(CEIL);
   plane(CEIL,W,D,M.ceiling,W/2,H,D/2,Math.PI/2);
   if(STY.ceiling==='tray'){
     const bw=.45, by=H-.2;
@@ -760,9 +762,9 @@ function hood(p,hx){
     return;
   }
   const mat=k==='plaster'?std({map:wallTex(),color:'#fbf6ee',roughness:.95}):finMat('white');
-  const fg=new THREE.CylinderGeometry(.24,.66,.62,4,1); fg.rotateY(Math.PI/4); fg.scale(1,1,.62);
+  const fg=new THREE.CylinderGeometry(.24,.66,.62,4,1); fg.rotateY(Math.PI/4); fg.scale(1,1,.62); fg.translate(0,0,.66*Math.SQRT1_2*.62+.005);
   const fr=new THREE.Mesh(fg,mat); fr.position.set(hx,1.98,0); fr.castShadow=true; fr.receiveShadow=true; p.add(fr);
-  B(p,hx-.2,2.29,0,.4,(STY.upperTop>2.5?H:H)-2.29-(STY.ceiling==='beams'?.0:0),.22,mat);
+  B(p,hx-.2,2.29,.005,.4,H-.005-2.29,.3,mat);
   B(p,hx-.48,1.62,0,.96,.1,.31,k==='plaster'?M.darkWood:M.shelfWood);
   B(p,hx-.25,1.6,.05,.5,.02,.24,M.steelDark);
   for(const dx of [-.15,.15])C(p,.022,.003,hx+dx,1.598,.18,M.bulb).castShadow=false;
@@ -812,28 +814,40 @@ function sink(p,sc,ox0,ox1,oz0,oz1,topY){
   }
 }
 function coffeeStation(p,y){
-  const cx=.44, zb=.09;
-  if(state.style==='modern')espressoModern(p,cx,y,zb); else if(state.style==='farm')espressoRetro(p,cx,y,zb); else espressoMajolica(p,cx,y,zb);
-  // coffee beans in a glass jar with a wooden lid
-  C(p,.05,.17,.1,y+.085,.17,M.jarGlass,null,28); C(p,.046,.13,.1,y+.066,.17,M.beans,null,24); C(p,.053,.022,.1,y+.181,.17,M.board,null,28);
-  if(state.style!=='med'){const b=B(p,.69,y,.02,.28,.4,.02,M.board); b.position.set(.71,y+.2,.06); b.rotation.x=-.18; b.rotation.y=Math.PI/2;}
+  // local x runs from the pantry (0) toward the hob; the machine sits at the pantry end, the board lies flat beside it
+  const zb=.09;
+  if(state.style==='modern'){espressoModern(p,.21,y,zb); board(p,.52,y);}
+  else if(state.style==='farm'){espressoRetro(p,.29,y,zb); board(p,.66,y);}
+  else espressoMajolica(p,.16,y,zb);
+}
+function board(p,cx,y){
+  rbox(p,.2,.018,.32,.03,.004,M.board,cx,y+.009,.3);
+  C(p,.014,.019,cx,y+.0095,.15,M.board,null,16);
 }
 function cups(p,xs,y,z,mat){for(const x of xs){C(p,.026,.055,x,y+.028,z,mat,null,20,.029); C(p,.023,.022,x,y+.017,z,M.espresso,null,20); C(p,.024,.004,x,y+.03,z,M.crema,null,20);}}
 function espressoModern(p,cx,y,zb){
-  const S=M.fsteel, w=.37, d=.38, zc=zb+d/2;
-  rbox(p,w,.07,d,.02,.01,S,cx,y+.035,zc);
-  B(p,cx-w/2+.04,y+.07,zb+d-.16,w-.08,.004,.14,M.steelDark);
-  rbox(p,w,.28,.19,.02,.01,S,cx,y+.07+.14,zb+.095);
-  rbox(p,w,.09,d,.02,.012,S,cx,y+.35+.045,zc);
-  B(p,cx-.065,y+.36,zb+d-.003,.13,.07,.004,M.blackGlass);
-  [M.scrA,M.scrB,M.scrC,M.scrB].forEach((m,i)=>B(p,cx-.055+i*.029,y+.38,zb+d+.002,.02,.026,.001,m,false));
-  C(p,.05,.14,cx-.11,y+.44+.07,zb+.13,M.tintHop,null,32,.075); C(p,.044,.09,cx-.11,y+.44+.045,zb+.13,M.beans,null,24,.06); C(p,.078,.02,cx-.11,y+.44+.15,zb+.13,M.black,null,32);
-  C(p,.04,.03,cx+.03,y+.335,zb+d-.09,M.chrome); C(p,.035,.035,cx+.03,y+.3,zb+d-.09,M.chrome);
-  tube(p,[[cx+.03,y+.3,zb+d-.06],[cx+.04,y+.295,zb+d+.03],[cx+.05,y+.29,zb+d+.11]],.011,M.black,16);
-  C(p,.013,.04,cx-.11,y+.32,zb+d-.06,M.steelDark);
-  tube(p,[[cx+.16,y+.34,zb+d-.06],[cx+.17,y+.26,zb+d-.03],[cx+.175,y+.17,zb+d-.02]],.006,M.chrome,16);
-  cups(p,[cx+.005,cx+.055],y+.074,zb+d-.09,M.jarGlass);
-  C(p,.036,.1,cx+.27,y+.05,zb+.25,M.fsteel,null,28,.031); tube(p,[[cx+.3,y+.08,zb+.25],[cx+.33,y+.06,zb+.25],[cx+.3,y+.03,zb+.25]],.006,M.fsteel,12);
+  const w=.3, h=.44, d=.43, zf=zb+d, B2=M.mattBlack, Z=M.bronze;
+  const by=.25, bd=.12;                                                         // dispensing bay: height and depth
+  rbox(p,w,h-by,d,.025,.008,B2,cx,y+by+(h-by)/2,zb+d/2);                       // upper body with the screen
+  rbox(p,w,by+.01,d-bd,.02,.006,B2,cx,y+(by+.01)/2,zb+(d-bd)/2);               // body behind the bay
+  rbox(p,w,.045,d,.015,.006,B2,cx,y+.0225,zb+d/2);                             // base
+  for(const sx of [-1,1])B(p,cx+sx*(w/2-.011)-.011,y,zf-bd,.022,by+.01,bd,B2);   // bay side walls
+  B(p,cx-w/2+.02,y+h,zb+.04,w-.04,.006,d-.08,M.blackGlass);                    // lid
+  // bronze frame around the front face
+  B(p,cx-w/2+.004,y+.005,zf,.008,h-.01,.008,Z); B(p,cx+w/2-.012,y+.005,zf,.008,h-.01,.008,Z);
+  B(p,cx-w/2+.004,y+h-.013,zf,w-.008,.008,.008,Z); B(p,cx-w/2+.004,y+.005,zf,w-.008,.008,.008,Z);
+  // glass touchscreen with lit drink icons
+  B(p,cx-w/2+.016,y+h-.17,zf-.004,w-.032,.155,.006,M.blackGlass);
+  [M.scrB,M.scrB,M.scrA,M.scrB,M.scrB].forEach((m,i)=>B(p,cx-.1+i*.05,y+h-.085,zf+.003,.016,.022,.001,m,false));
+  for(let i=0;i<4;i++)B(p,cx-.06+i*.04,y+h-.125,zf+.003,.012,.008,.001,M.scrB,false);
+  // dispensing bay: recessed dark opening, spout, drip tray
+  B(p,cx-w/2+.022,y+.045,zf-bd-.002,w-.044,by-.04,.004,M.black);
+  rbox(p,.07,.05,.07,.01,.004,B2,cx,y+by-.02,zf-.065);
+  C(p,.005,.012,cx-.012,y+.185,zf-.055,M.steelDark); C(p,.005,.012,cx+.012,y+.185,zf-.055,M.steelDark);
+  B(p,cx-w/2+.02,y+.03,zf-.1,w-.04,.016,.105,M.black);
+  for(let i=0;i<9;i++)B(p,cx-w/2+.035+i*.029,y+.047,zf-.09,.016,.001,.085,M.black,false);
+  // side service panel
+  B(p,cx+w/2,y+.08,zb+.08,.003,.26,.13,M.black);
 }
 function espressoRetro(p,cx,y,zb){
   const Tq=M.teal, w=.5, d=.42;
@@ -965,7 +979,7 @@ function rebuild(){
   makeMats();
   ROOT=new THREE.Group(); scene.add(ROOT);
   buildRoom(); buildKitchen(); buildLights();
-  updateSpec(); updateUI();
+  updateSpec(); updateUI(); if(typeof updatePdfNote==='function')updatePdfNote();
   try{localStorage.setItem('kitchen-studio',JSON.stringify(state))}catch(e){}
 }
 
@@ -1046,6 +1060,17 @@ function shot(name,w,h){
   renderer.setPixelRatio(pr); renderer.setSize(size.x,size.y,false); visibility(camera.position);
   return url;
 }
+// Designs with Blender (Cycles) renders shipped beside the page in renders/<style>-<palette>-<island>-<view>.jpg
+const RENDERED=new Set(['modern-brown-white-stools','modern-green-white-plain','med-brown-white-stools','med-green-plain','farm-green-white-stools','farm-brown-green-plain']);
+async function loadRender(key,view){
+  try{const r=await fetch(`renders/${key}-${view}.jpg`); if(!r.ok)return null; const b=await r.blob();
+    return await new Promise(res=>{const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(null); fr.readAsDataURL(b);});}catch(e){return null;}
+}
+function updatePdfNote(){
+  const k=`${state.style}-${state.palette}-${state.island}`, n=document.getElementById('pdf-note');
+  n.textContent=RENDERED.has(k)?'Studio-rendered PDF: five pages of photo-quality Blender images, with plan and finishes.':'Five pages of pictures from this 3D view: overview, both walls, island and plan, with finishes.';
+  document.getElementById('pdf').dataset.studio=RENDERED.has(k)?'1':'';
+}
 const pdfBtn=document.getElementById('pdf');
 pdfBtn.addEventListener('click',async()=>{
   if(!window.jspdf){document.getElementById('pdf-note').textContent='The PDF tool did not load. Check your connection and reload the page.'; return;}
@@ -1063,11 +1088,13 @@ pdfBtn.addEventListener('click',async()=>{
     const imgW=2600, imgH=Math.round(2600*(PH-band)/PW);
     const pages=[['overview','Kitchen design',`${title}  ·  ${date}`],['sink','Sink wall','Sink under the window, corner run turning into the cooking wall.'],
       ['cook','Cooking wall','Gas hob and oven, coffee station, pantry with built-in microwave, fridge.'],['island','Island',state.island==='stools'?'1550 × 890 mm island with storage on the work side and three stools.':'1550 × 890 mm island with storage on both sides.']];
-    pages.forEach(([v,h1,line],i)=>{ if(i)doc.addPage(); busy.querySelector('span').textContent=`Rendering page ${i+1} of 5…`;
-      doc.addImage(shot(v,imgW,imgH),'JPEG',0,0,PW,PH-band); pageBand(h1,line,i+1);});
+    const key=`${state.style}-${state.palette}-${state.island}`, rendered=RENDERED.has(key);
+    const img=async(v,w,h)=>{ if(rendered){const u=await loadRender(key,v); if(u)return u;} return shot(v,w,h); };
+    for(let i=0;i<pages.length;i++){const [v,h1,line]=pages[i]; if(i)doc.addPage(); busy.querySelector('span').textContent=`${rendered?'Adding':'Rendering'} page ${i+1} of 5…`;
+      doc.addImage(await img(v,imgW,imgH),'JPEG',0,0,PW,PH-band); pageBand(h1,line,i+1);}
     // page 5: plan + finishes + sizes
     doc.addPage(); doc.setFillColor(250,249,246); doc.rect(0,0,PW,PH,'F');
-    const ps=150; doc.addImage(shot('plan',1800,1800),'JPEG',10,10,ps,ps*1);
+    const ps=150; doc.addImage(await img('plan',1800,1800),'JPEG',10,10,ps,ps*1);
     let y=18; const x=172;
     doc.setTextColor(...acc); doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.text('FINISHES',x,y); y+=6;
     const sw=[['Base & island',swColor(PAL.lower)],['Wall cabinets',swColor(PAL.upper)],['Worktop',{quartz:'#edeae4',charcoal:'#2b2b2c',travertine:'#d9c4a2',marble:'#f0eee9'}[topKind()]],['Hardware',{brass:'#c39a55',black:'#171717',iron:'#2a2724'}[hwKind()]],['Floor',{porcelain:'#d6d2ca',terracotta:'#b8653f',oak:'#b28a5e'}[STY.floor]]];
@@ -1095,7 +1122,7 @@ function loop(now){
   controls.update(); visibility(camera.position); renderer.render(scene,camera); requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
-window.__studio={state,rebuild,fly,VIEWS,camera,controls,shot};
+window.__studio={state,rebuild,fly,VIEWS,camera,controls,shot,get root(){return ROOT},get outside(){return OUTSIDE},scene};
 })();
 </script>
 
