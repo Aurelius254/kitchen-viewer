@@ -12,3 +12,14 @@
   for = "/*.pdf"
   [headers.values]
     Cache-Control = "public, max-age=3600"
+
+# Old links from before the projects menu
+[[redirects]]
+  from = "/kitchen-design.pdf"
+  to = "/mprime/kitchen-design.pdf"
+  status = 301
+
+[[redirects]]
+  from = "/kitchen-fit-out.pdf"
+  to = "/mprime/kitchen-fit-out.pdf"
+  status = 301

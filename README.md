@@ -1,8 +1,9 @@
-# kitchen-viewer
+# Munash Prime projects
 
-Interactive 3D concept of the kitchen fit-out (sink wall and fridge wall), built with three.js.
+Static site for munashprime.netlify.app.
 
-Open `index.html` in a browser, or view it on GitHub Pages once Pages is enabled for this branch.
+- `/` — project menu
+- `/mprime/` — Mprime: kitchenette fit-out viewer, with PDF design packs
+- `/awes/` — Awes: kitchen studio (Modern, Mediterranean, Farmhouse; six colour schemes; island with or without stools; PDF download)
 
-- Drag to rotate, scroll or pinch to zoom, right-drag to pan.
-- Tap a unit to see its size (mm).
+No build step: Netlify publishes the repository root (see `netlify.toml`).
