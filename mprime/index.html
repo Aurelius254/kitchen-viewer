@@ -246,11 +246,28 @@ function drawer(p,x0,y0,w,h,z){
 }
 
 /* ---------- unit builders (local: width along +x from 0, back on z=0, front faces +z) ---------- */
+function openBowl(p,cx,cz,ytop,w,d,depth,r,rb=.035){
+  const rr=(cw,cd,cr,n=8)=>{const out=[]; for(const [qx,qz,a0] of [[1,1,0],[-1,1,90],[-1,-1,180],[1,-1,270]]){const ox=cx+qx*(cw/2-cr), oz=cz+qz*(cd/2-cr);
+    for(let i=0;i<n;i++){const a=(a0+90*i/(n-1))*Math.PI/180; out.push([ox+cr*Math.cos(a),oz+cr*Math.sin(a)]);}} return out;};
+  const prof=[[0,0],[0,depth-rb]]; for(let i=1;i<=6;i++){const a=Math.PI/2*i/6; prof.push([rb-rb*Math.cos(a),depth-rb+rb*Math.sin(a)]);}
+  const pos=[], idx=[]; let n=0;
+  prof.forEach(([ins,dn])=>{const ring=rr(w-2*ins,d-2*ins,Math.max(r-ins,.004)); n=ring.length; ring.forEach(([x,z])=>pos.push(x,ytop-dn,z));});
+  for(let k=0;k<prof.length-1;k++)for(let i=0;i<n;i++){const j=(i+1)%n; idx.push(k*n+i,k*n+j,(k+1)*n+j, k*n+i,(k+1)*n+j,(k+1)*n+i);}
+  const c=pos.length/3; pos.push(cx,ytop-depth,cz); const L=(prof.length-1)*n; for(let i=0;i<n;i++)idx.push(L+i,L+(i+1)%n,c);
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); g.computeVertexNormals();
+  const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0xc4c9cd,metalness:.85,roughness:.3,side:THREE.DoubleSide})); m.castShadow=true; m.receiveShadow=true; p.add(m);
+}
 function baseUnit(w,sections,opts={}){
   const g=new THREE.Group(), h=.9, top=.03, pl=.1, cd=.58;
   B(g,0,0,0,w,pl,cd-.06,M.plinth);
-  B(g,0,pl,0,w,h-top-pl,cd,M.carc);
-  B(g,-.005,h-top,0,w+.01,top,.62,M.top);
+  B(g,0,pl,0,w,(opts.sink?.64:h-top)-pl,cd,M.carc);
+  if(!opts.sink)B(g,-.005,h-top,0,w+.01,top,.62,M.top);
+  else{ // worktop in four pieces around the bowl opening (opening .40 wide x .36 deep)
+    const ox0=opts.sink.x+.02, ox1=opts.sink.x+.42, oz0=.13, oz1=.49, L=-.005, R=w+.005;
+    B(g,L,h-top,0,R-L,top,oz0,M.top); B(g,L,h-top,oz1,R-L,top,.62-oz1,M.top);
+    B(g,L,h-top,oz0,ox0-L,top,oz1-oz0,M.top); B(g,ox1,h-top,oz0,R-ox1,top,oz1-oz0,M.top);
+  }
+
   const y0=pl, fh=h-top-pl; let x=0;
   for(const s of sections){
     if(s.type==='door') door(g,x,y0,s.w,fh,cd,s.handle);
@@ -260,9 +277,11 @@ function baseUnit(w,sections,opts={}){
   }
   if(opts.sink){ // inset stainless bowl + mixer tap
     const sx=opts.sink.x, sw=.44, sd=.40, sz=.11, y=h+.0005;
-    B(g,sx,y,sz,sw,.004,sd,M.steel,false);
-    B(g,sx+.025,y+.002,sz+.025,sw-.05,.003,sd-.05,M.steelDark,false);
-    C(g,.022,.004,sx+sw/2,y+.006,sz+sd/2+.04,M.chrome);
+    const bcx=sx+sw/2, bcz=.31;
+    openBowl(g,bcx,bcz,h,.40,.36,.19,.045);
+    for(const [x0,z0,ww,dd] of [[sx,.11,sw,.02],[sx,.49,sw,.02],[sx,.13,.02,.36],[sx+sw-.02,.13,.02,.36]])B(g,x0,h,z0,ww,.004,dd,M.steel,false);
+    C(g,.03,.004,bcx,h-.188,bcz,M.chrome); C(g,.02,.005,bcx,h-.187,bcz,M.steelDark);
+
     const tapLeft=opts.sink.tap==='left', fx=tapLeft?sx-.04:sx+sw+.04, fz=.07;
     C(g,.024,.05,fx,h+.025,fz,M.chrome); C(g,.014,.30,fx,h+.2,fz,M.chrome);
     const R=.085, arc=new THREE.Mesh(new THREE.TorusGeometry(R,.013,10,28,Math.PI),M.chrome);
