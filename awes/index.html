@@ -746,7 +746,8 @@ function buildKitchen(){
   const ox0=sc-.38, ox1=sc+.38, oz0=.12, oz1=STY.sink==='apron'?CTD+.02:.54;   // opening starts 120 off the wall so the tap stands on the worktop
   B(gn,.62,topY,0,2.08,STY.topT,oz0,M.top);
   if(STY.sink!=='apron')B(gn,.62,topY,oz1,2.08,STY.topT,CTD-oz1,M.top);
-  B(gn,.62,topY,oz0,ox0-.62,STY.topT,CTD-oz0,M.top); B(gn,ox1,topY,oz0,2.70-ox1,STY.topT,CTD-oz0,M.top);
+  {const dz=STY.sink==='apron'?CTD-oz0:oz1-oz0;   // side pieces stop where the front strip starts (no overlapping faces)
+  B(gn,.62,topY,oz0,ox0-.62,STY.topT,dz,M.top); B(gn,ox1,topY,oz0,2.70-ox1,STY.topT,dz,M.top);}
   sink(gn,sc,ox0,ox1,oz0,oz1,topY);
   // splash: under the window and beside it
   B(gn,0,WT,0,.40,up0-WT,.012,M.splash,false); B(gn,.40,WT,0,1.77,1.07-WT,.012,M.splash,false); B(gn,2.17,WT,0,.53,up0-WT,.012,M.splash,false);
