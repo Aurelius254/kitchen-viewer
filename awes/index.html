@@ -123,6 +123,14 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         </div>
       </div>
       <div>
+        <h2>Pass-through cabinet</h2>
+        <div class="seg" role="radiogroup" aria-label="Pass-through cabinet">
+          <button role="radio" id="pt-off" data-pt="off" aria-checked="true">No cabinet</button>
+          <button role="radio" id="pt-on" data-pt="on" aria-checked="false">With cabinet</button>
+        </div>
+        <p class="note" id="pt-note"></p>
+      </div>
+      <div>
         <button class="pdf" id="pdf"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>Download this design (PDF)</button>
         <p class="note" id="pdf-note">Five pages of pictures: overview, both walls, island and plan, with finishes.</p>
       </div>
@@ -135,7 +143,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <dl>
           <dt>Room</dt><dd>3900 × 4570, 2920 high</dd>
           <dt>Worktops</dt><dd>900 high, 610 deep</dd>
-          <dt>Island</dt><dd>1550 × 890, 1200 walkways</dd>
+          <dt>Island</dt><dd id="ks-island">1550 × 890, 1200 walkways</dd>
           <dt>Window</dt><dd>1770 wide, sill 1070</dd>
           <dt>Pass-through</dt><dd>970 × 1550, sill 1070</dd>
           <dt>Doors</dt><dd>Two grilled metal: 970 and 770</dd>
@@ -187,8 +195,8 @@ const FIN_NAME={
   walnut:{modern:'warm walnut', med:'warm walnut', farm:'warm walnut'},
   oak:{modern:'light oak', med:'light oak', farm:'light oak'}
 };
-const state={style:'modern', palette:'green-white', island:'stools'};
-try{const s=JSON.parse(localStorage.getItem('kitchen-studio')||'{}'); if(STYLES[s.style])state.style=s.style; if(PALETTES[s.palette])state.palette=s.palette; if(s.island==='plain'||s.island==='stools')state.island=s.island;}catch(e){}
+const state={style:'modern', palette:'green-white', island:'stools', pt:'off'};
+try{const s=JSON.parse(localStorage.getItem('kitchen-studio')||'{}'); if(STYLES[s.style])state.style=s.style; if(PALETTES[s.palette])state.palette=s.palette; if(s.island==='plain'||s.island==='stools')state.island=s.island; if(s.pt==='on'||s.pt==='off')state.pt=s.pt;}catch(e){}
 let STY=STYLES[state.style], PAL=PALETTES[state.palette];
 
 /* ---------------------------------------------------------------- renderer */
@@ -881,7 +889,7 @@ function espressoMajolica(p,cx,y,zb){
 }
 function island(K){
   const stools=state.island==='stools', fin=PAL.island, fm=finMat(fin);
-  const z0=1.81, L=1.55, xw=1.81, xe=2.70, topY=WT-STY.topT;
+  const z0=state.pt==='on'?1.61:1.81, dz=z0-1.81, L=1.55, xw=1.81, xe=2.70, topY=WT-STY.topT;
   // west face: back of the carcass at x .. depending on stools
   if(stools){
     const g=runGroup(K,2.41,z0,-Math.PI/2);
@@ -891,7 +899,7 @@ function island(K){
     const ep=state.style==='modern'?M.top:fm, et=state.style==='modern'?STY.topT:.04;
     B(K,xw-.02,0,z0-et,xe-xw+.04,topY,et,ep); B(K,xw-.02,0,z0+L,xe-xw+.04,topY,et,ep);
     B(K,xw-.02,topY,z0-et,xe-xw+.04,STY.topT,L+2*et,M.top);
-    for(const zc of [2.07,2.585,3.10])stool(K,2.98,zc);
+    for(const zc of [2.07,2.585,3.10])stool(K,2.98,zc+dz);
   } else {
     const gw=runGroup(K,2.255,z0,-Math.PI/2), ge=runGroup(K,2.255,z0+L,Math.PI/2);
     baseRun(gw,0,[{w:.45,t:'drawers'},{w:.65,t:'doors',n:2},{w:.45,t:'drawers'}],fin,{cd:.445-FT});
@@ -901,15 +909,27 @@ function island(K){
   }
   // decor on the island
   const ty=WT, cx=(xw+xe)/2-.05;
-  C(K,.14,.06,cx,ty+.03,2.35,state.style==='farm'?M.shelfWood:state.style==='med'?M.terra:M.potWhite,null,28,.09);
-  for(let k=0;k<5;k++)S(K,.04,cx+(rnd()-.5)*.14,ty+.075+rnd()*.03,2.35+(rnd()-.5)*.14,state.style==='farm'?M.apple:M.lemon,1,.9,1);
-  if(state.style==='modern'){C(K,.07,.26,cx,ty+.13,2.95,M.potWhite,null,24,.05); for(let k=0;k<6;k++){const a=k; tube(K,[[cx,ty+.25,2.95],[cx+Math.cos(a)*.08,ty+.45,2.95+Math.sin(a)*.08],[cx+Math.cos(a)*.16,ty+.62,2.95+Math.sin(a)*.16]],.003,M.black,12);}}
-  else if(state.style==='med'){C(K,.09,.22,cx,ty+.11,2.95,M.terra,null,24,.06); for(let k=0;k<10;k++)S(K,.03,cx+(rnd()-.5)*.2,ty+.3+rnd()*.15,2.95+(rnd()-.5)*.2,M.plant2,1,.5,1);}
-  else {C(K,.06,.18,cx,ty+.09,2.95,std({color:'#c9c4b8',roughness:.3}),null,24,.05); for(let k=0;k<5;k++)S(K,.035,cx+(rnd()-.5)*.1,ty+.25+rnd()*.06,2.95+(rnd()-.5)*.1,M.potWhite,1,1.2,1);}
+  C(K,.14,.06,cx,ty+.03,2.35+dz,state.style==='farm'?M.shelfWood:state.style==='med'?M.terra:M.potWhite,null,28,.09);
+  for(let k=0;k<5;k++)S(K,.04,cx+(rnd()-.5)*.14,ty+.075+rnd()*.03,2.35+dz+(rnd()-.5)*.14,state.style==='farm'?M.apple:M.lemon,1,.9,1);
+  if(state.style==='modern'){C(K,.07,.26,cx,ty+.13,2.95+dz,M.potWhite,null,24,.05); for(let k=0;k<6;k++){const a=k; tube(K,[[cx,ty+.25,2.95+dz],[cx+Math.cos(a)*.08,ty+.45,2.95+dz+Math.sin(a)*.08],[cx+Math.cos(a)*.16,ty+.62,2.95+dz+Math.sin(a)*.16]],.003,M.black,12);}}
+  else if(state.style==='med'){C(K,.09,.22,cx,ty+.11,2.95+dz,M.terra,null,24,.06); for(let k=0;k<10;k++)S(K,.03,cx+(rnd()-.5)*.2,ty+.3+rnd()*.15,2.95+dz+(rnd()-.5)*.2,M.plant2,1,.5,1);}
+  else {C(K,.06,.18,cx,ty+.09,2.95+dz,std({color:'#c9c4b8',roughness:.3}),null,24,.05); for(let k=0;k<5;k++)S(K,.035,cx+(rnd()-.5)*.1,ty+.25+rnd()*.06,2.95+dz+(rnd()-.5)*.1,M.potWhite,1,1.2,1);}
   // pendants over the island
   pendants(K,(xw+xe)/2,z0+L/2);
   // rug
-  if(STY.rug){const r=STY.rug==='jute'?rugTex('jute'):rugTex('floral'); const m=plane(K,.8,2.4,std({map:r,roughness:.95,envMapIntensity:.2}),1.21,.004,1.95,-Math.PI/2); m.receiveShadow=true;}
+  if(STY.rug){const r=STY.rug==='jute'?rugTex('jute'):rugTex('floral'); const m=plane(K,.8,2.4,std({map:r,roughness:.95,envMapIntensity:.2}),1.21,.004,1.95+dz,-Math.PI/2); m.receiveShadow=true;}
+  if(state.pt==='on')passCabinet(K);
+}
+// base cabinet under the south pass-through: from the hatch's east edge (x 3.67) west to 1200 clear of the fridge front
+function passCabinet(K){
+  const g=runGroup(K,3.67,D,Math.PI), cd=.42-FT, topY=WT-STY.topT, len=1.79;
+  baseRun(g,0,[{w:.45,t:'drawers'},{w:.9,t:'doors',n:2},{w:.44,t:'drawers'}],PAL.lower,{cd});
+  B(g,-.005,topY,0,len+.01,STY.topT,.44,M.top);
+  B(g,0,WT,0,len,1.04-WT,.012,M.splash,false);
+  // a little life on the counter: fruit bowl and a plant at the hatch
+  C(g,.12,.05,.35,WT+.025,.22,state.style==='farm'?M.shelfWood:M.potWhite,null,28,.08);
+  for(let k=0;k<4;k++)S(g,.04,.35+(rnd()-.5)*.12,WT+.07+rnd()*.03,.22+(rnd()-.5)*.1,state.style==='farm'?M.apple:M.lemon,1,.9,1);
+  C(g,.07,.14,1.6,WT+.07,.2,state.style==='med'?M.terra:M.potWhite,null,24,.055); for(let k=0;k<8;k++)S(g,.05,1.6+(rnd()-.5)*.1,WT+.19+rnd()*.1,.2+(rnd()-.5)*.1,k%2?M.plant:M.plant2,1,.7,1);
 }
 function stool(p,x,z){
   const k=STY.stool, g=new THREE.Group(); g.position.set(x,0,z); p.add(g);
@@ -975,7 +995,7 @@ function rebuild(){
   if(ROOT){scene.remove(ROOT); dispose(ROOT);}
   MATS.forEach(m=>m.dispose()); MATS=[]; LIGHTS.length=0; OUTSIDE=[];
   STY=STYLES[state.style]; PAL=PALETTES[state.palette];
-  seed=hash(state.style+state.palette+state.island);
+  seed=hash(state.style+state.palette+state.island);  // pass-through option deliberately left out so decor stays put
   makeMats();
   ROOT=new THREE.Group(); scene.add(ROOT);
   buildRoom(); buildKitchen(); buildLights();
@@ -1020,9 +1040,14 @@ for(const key of Object.keys(PALETTES)){
 }
 document.querySelectorAll('[data-style]').forEach(b=>b.addEventListener('click',()=>{state.style=b.dataset.style; rebuild();}));
 document.querySelectorAll('[data-island]').forEach(b=>b.addEventListener('click',()=>{state.island=b.dataset.island; rebuild();}));
+document.querySelectorAll('[data-pt]').forEach(b=>b.addEventListener('click',()=>{state.pt=b.dataset.pt; rebuild();}));
 function updateUI(){
   document.querySelectorAll('[data-style]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.style===state.style)));
   document.querySelectorAll('[data-island]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.island===state.island)));
+  document.querySelectorAll('[data-pt]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.pt===state.pt)));
+  const on=state.pt==='on';
+  document.getElementById('pt-note').textContent=on?'1790 long, 420 deep, under the hatch. The island moves 200 north to keep 1000 walkways.':'Walkways stay at 1200 all round the island.';
+  document.getElementById('ks-island').textContent=on?'1550 × 890, walkways 1000 north and south, 1200 east and west':'1550 × 890, 1200 walkways';
   document.querySelectorAll('[data-palette]').forEach(b=>{
     b.setAttribute('aria-checked',String(b.dataset.palette===state.palette));
     const [a,c]=SWATCH[b.dataset.palette]; b.querySelector('.dot').style.background=`linear-gradient(135deg,${swColor(a)} 0 50%,${swColor(c)} 50% 100%)`;
@@ -1041,7 +1066,8 @@ function specRows(){
     ['Sink',STY.sink==='apron'?'White apron-front sink, bridge tap':state.style==='med'?'Undermount steel, bridge tap':'Undermount steel, gooseneck tap'],
     ['Hood',{glass:'Black angled glass',plaster:'Plaster canopy with wood beam',canopy:'Painted canopy with oak mantel'}[STY.hood]],
     ['Lighting',{tray:'Lit ceiling tray, downlights, linear pendant',beams:'Wood beams, rattan pendants',flat:'Downlights, dome pendants'}[STY.ceiling]],
-    ['Island',state.island==='stools'?'Storage one side, 3 stools on the other':'Storage on both sides']
+    ['Island',state.island==='stools'?'Storage one side, 3 stools on the other':'Storage on both sides'],
+    ['Pass-through',state.pt==='on'?'420-deep cabinet below the hatch, 1790 long':'Open wall below the hatch']
   ];
 }
 const cap=s=>s[0].toUpperCase()+s.slice(1);
@@ -1067,7 +1093,7 @@ async function loadRender(key,view){
     return await new Promise(res=>{const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(null); fr.readAsDataURL(b);});}catch(e){return null;}
 }
 function updatePdfNote(){
-  const k=`${state.style}-${state.palette}-${state.island}`, n=document.getElementById('pdf-note');
+  const k=`${state.style}-${state.palette}-${state.island}${state.pt==='on'?'-pt':''}`, n=document.getElementById('pdf-note');
   n.textContent=RENDERED.has(k)?'Studio-rendered PDF: five pages of photo-quality Blender images, with plan and finishes.':'Five pages of pictures from this 3D view: overview, both walls, island and plan, with finishes.';
   document.getElementById('pdf').dataset.studio=RENDERED.has(k)?'1':'';
 }
@@ -1079,7 +1105,7 @@ pdfBtn.addEventListener('click',async()=>{
   try{
     const {jsPDF}=window.jspdf, doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
     const PW=297, PH=210, band=26, ink=[31,29,26], muted=[107,102,93], acc=[63,90,60];
-    const title=`${STY.name} · ${PAL.name} · ${state.island==='stools'?'island with stools':'island without stools'}`;
+    const title=`${STY.name} · ${PAL.name} · ${state.island==='stools'?'island with stools':'island without stools'}${state.pt==='on'?' · pass-through cabinet':''}`;
     const date=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
     const pageBand=(h1,line,n)=>{doc.setFillColor(255,255,255); doc.rect(0,PH-band,PW,band,'F'); doc.setFillColor(...acc); doc.rect(0,PH-band,PW,.8,'F');
       doc.setTextColor(...ink); doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.text(h1,14,PH-band+11);
@@ -1088,7 +1114,7 @@ pdfBtn.addEventListener('click',async()=>{
     const imgW=2600, imgH=Math.round(2600*(PH-band)/PW);
     const pages=[['overview','Kitchen design',`${title}  ·  ${date}`],['sink','Sink wall','Sink under the window, corner run turning into the cooking wall.'],
       ['cook','Cooking wall','Gas hob and oven, coffee station, pantry with built-in microwave, fridge.'],['island','Island',state.island==='stools'?'1550 × 890 mm island with storage on the work side and three stools.':'1550 × 890 mm island with storage on both sides.']];
-    const key=`${state.style}-${state.palette}-${state.island}`, rendered=RENDERED.has(key);
+    const key=`${state.style}-${state.palette}-${state.island}${state.pt==='on'?'-pt':''}`, rendered=RENDERED.has(key);
     const img=async(v,w,h)=>{ if(rendered){const u=await loadRender(key,v); if(u)return u;} return shot(v,w,h); };
     for(let i=0;i<pages.length;i++){const [v,h1,line]=pages[i]; if(i)doc.addPage(); busy.querySelector('span').textContent=`${rendered?'Adding':'Rendering'} page ${i+1} of 5…`;
       doc.addImage(await img(v,imgW,imgH),'JPEG',0,0,PW,PH-band); pageBand(h1,line,i+1);}
@@ -1100,11 +1126,11 @@ pdfBtn.addEventListener('click',async()=>{
     const sw=[['Base & island',swColor(PAL.lower)],['Wall cabinets',swColor(PAL.upper)],['Worktop',{quartz:'#edeae4',charcoal:'#2b2b2c',travertine:'#d9c4a2',marble:'#f0eee9'}[topKind()]],['Hardware',{brass:'#c39a55',black:'#171717',iron:'#2a2724'}[hwKind()]],['Floor',{porcelain:'#d6d2ca',terracotta:'#b8653f',oak:'#b28a5e'}[STY.floor]]];
     for(const [n,c] of sw){const v=parseInt(c.slice(1),16); doc.setFillColor(v>>16&255,v>>8&255,v&255); doc.setDrawColor(200,196,188); doc.roundedRect(x,y-4,9,9,1.5,1.5,'FD'); doc.setTextColor(...ink); doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.text(n,x+13,y+2); y+=12;}
     y+=2; doc.setTextColor(...acc); doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.text('KEY SIZES (MM)',x,y); y+=6;
-    for(const [a,b] of [['Room','3900 × 4570, 2920 high'],['Worktops','900 high, 610 deep'],['Island','1550 × 890'],['Walkways','1200 all round'],['Window','1770 wide, sill 1070'],['Pass-through','970 × 1550, sill 1070']]){
+    for(const [a,b] of [['Room','3900 × 4570, 2920 high'],['Worktops','900 high, 610 deep'],['Island','1550 × 890'],['Walkways',state.pt==='on'?'1000 N/S, 1200 E/W':'1200 all round'],['Window','1770 wide, sill 1070'],['Pass-through','970 × 1550, sill 1070']]){
       doc.setTextColor(...muted); doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.text(a,x,y); doc.setTextColor(...ink); doc.text(b,x+30,y); y+=5.6;}
     doc.setFillColor(...acc); doc.rect(0,PH-band,PW,.8,'F'); doc.setTextColor(...ink); doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.text('Plan and finishes',14,PH-band+11);
     doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(...muted); doc.text(title,14,PH-band+18); doc.setFontSize(8.5); doc.text('Kitchen design  ·  5 / 5',PW-14,PH-band+18,{align:'right'});
-    doc.save(`kitchen-${state.style}-${state.palette}-${state.island}.pdf`);
+    doc.save(`kitchen-${state.style}-${state.palette}-${state.island}${state.pt==='on'?'-passthrough':''}.pdf`);
     document.getElementById('pdf-note').textContent='PDF ready. It downloads with the design name in the file name.';
   }catch(err){document.getElementById('pdf-note').textContent='The PDF could not be made: '+err.message;}
   finally{busy.hidden=true; pdfBtn.disabled=false;}
