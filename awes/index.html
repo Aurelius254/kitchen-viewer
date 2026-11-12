@@ -769,22 +769,33 @@ function grilledDoor(g,a,b,zc,y0,md){
   B(g,a+.05,.08,zc-.02,b-a-.1,1.97,.004,M.glass,false);
   C(g,.009,.14,b-.12,1.02,zc+.06,M.chrome,'x'); C(g,.009,.14,b-.12,1.02,zc-.06,M.chrome,'x');
 }
+// tapered box: back face flush on the wall (z=0), bottom rectangle (bw x bd) at y0, top rectangle (tw x td) at y1
+function taper(p,cx,y0,y1,bw,bd,tw,td,mat){
+  const g=new THREE.BoxGeometry(1,1,1), a=g.attributes.position;
+  for(let i=0;i<a.count;i++){
+    const top=a.getY(i)>0, w=top?tw:bw, d=top?td:bd;
+    a.setXYZ(i,cx+a.getX(i)*w,top?y1:y0,(a.getZ(i)+.5)*d);
+  }
+  g.computeVertexNormals();
+  const m=new THREE.Mesh(g,mat); m.castShadow=true; m.receiveShadow=true; p.add(m); return m;
+}
+// range hood: fits the 600 gap between the wall units on the cooking wall
 function hood(p,hx){
   const k=STY.hood;
   if(k==='glass'){
-    B(p,hx-.3,1.98,0,.6,.07,.32,M.black);
-    const g=B(p,hx-.3,1.62,0,.6,.42,.012,M.blackGlass); g.rotation.x=-.35; g.position.z=.28; g.position.y=1.82;
-    B(p,hx-.3,1.6,.15,.6,.02,.27,M.steelDark);
+    // angled hood: closed body against the wall, sloping black-glass front, steel underside with lights
+    taper(p,hx,1.62,2.05,.598,.5,.598,.3,M.blackGlass);
+    B(p,hx-.29,1.6,.02,.58,.02,.46,M.steelDark);
     for(const dx of [-.15,.15])C(p,.022,.003,hx+dx,1.598,.3,M.bulb).castShadow=false;
     return;
   }
   const mat=k==='plaster'?std({map:wallTex(),color:'#fbf6ee',roughness:.95}):finMat('white');
-  const fg=new THREE.CylinderGeometry(.24,.66,.62,4,1); fg.rotateY(Math.PI/4); fg.scale(1,1,.62); fg.translate(0,0,.66*Math.SQRT1_2*.62+.005);
-  const fr=new THREE.Mesh(fg,mat); fr.position.set(hx,1.98,0); fr.castShadow=true; fr.receiveShadow=true; p.add(fr);
-  B(p,hx-.2,2.29,.005,.4,H-.005-2.29,.3,mat);
-  B(p,hx-.48,1.62,0,.96,.1,.31,k==='plaster'?M.darkWood:M.shelfWood);
-  B(p,hx-.25,1.6,.05,.5,.02,.24,M.steelDark);
-  for(const dx of [-.15,.15])C(p,.022,.003,hx+dx,1.598,.18,M.bulb).castShadow=false;
+  const yb=1.72, yt=2.3, cw=.3, cd=.26;
+  taper(p,hx,yb,yt,.598,.5,cw,cd,mat);                         // canopy: meets the chimney exactly at the top
+  B(p,hx-cw/2,yt,0,cw,H-yt-(STY.ceiling==='beams'?0:.002),cd,mat); // chimney to the ceiling, same footprint
+  B(p,hx-.3,1.62,0,.6,.1,.52,k==='plaster'?M.darkWood:M.shelfWood); // mantel ledge
+  B(p,hx-.27,1.6,.04,.54,.02,.44,M.steelDark);
+  for(const dx of [-.15,.15])C(p,.022,.003,hx+dx,1.598,.28,M.bulb).castShadow=false;
 }
 function fridge(p,x0){
   const w=.84, h=1.86, d=.68, fz=d-.05;
