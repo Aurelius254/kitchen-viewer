@@ -186,13 +186,13 @@ const PALETTES={
 const FIN={
   green:{modern:'#8b9a7f', med:'#7b8a5f', farm:'#86998a'},
   white:{modern:'#ecebe6', med:'#efe6d4', farm:'#f2eee5'},
-  walnut:{modern:['#8b5d3c','#664129','#ad7d54'], med:['#8b5d3c','#664129','#ad7d54'], farm:['#8b5d3c','#664129','#ad7d54']},
+  walnut:{modern:['#a98563','#8d6c4f','#c2a07e'], med:['#a98563','#8d6c4f','#c2a07e'], farm:['#a98563','#8d6c4f','#c2a07e']},
   oak:{modern:['#c09b6b','#9a7749','#dcbb8b'], med:['#b98f5e','#93703f','#d4ad7c'], farm:['#c29c69','#9b7848','#dcbb89']}
 };
 const FIN_NAME={
   green:{modern:'sage green matte', med:'olive green', farm:'sage green'},
   white:{modern:'warm white', med:'chalk white', farm:'cream white'},
-  walnut:{modern:'warm walnut', med:'warm walnut', farm:'warm walnut'},
+  walnut:{modern:'honey walnut', med:'honey walnut', farm:'honey walnut'},
   oak:{modern:'light oak', med:'light oak', farm:'light oak'}
 };
 const state={style:'modern', palette:'green-white', island:'stools', pt:'off'};
@@ -1087,7 +1087,8 @@ function shot(name,w,h){
   return url;
 }
 // Designs with Blender (Cycles) renders shipped beside the page in renders/<style>-<palette>-<island>-<view>.jpg
-const RENDERED=new Set(['modern-brown-white-stools','modern-green-white-plain','med-brown-white-stools','med-green-plain','farm-green-white-stools','farm-brown-green-plain']);
+const RENDERED=new Set(['modern-brown-white-stools','modern-green-white-plain','med-brown-white-stools','med-green-plain','farm-green-white-stools','farm-brown-green-plain',
+  'modern-brown-white-stools-pt','modern-green-white-plain-pt','med-brown-white-stools-pt','med-green-plain-pt','farm-green-white-stools-pt','farm-brown-green-plain-pt']);
 async function loadRender(key,view){
   try{const r=await fetch(`renders/${key}-${view}.jpg`); if(!r.ok)return null; const b=await r.blob();
     return await new Promise(res=>{const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(null); fr.readAsDataURL(b);});}catch(e){return null;}
