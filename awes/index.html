@@ -743,7 +743,7 @@ function buildKitchen(){
   const sinkX=.81, sinkW=.8, sc=sinkX+sinkW/2;
   baseRun(gn,.62,[{w:.19,t:'blank'},{w:sinkW,t:'sink',n:2},{w:.6,t:'dw'},{w:.49,t:'drawers'}],PAL.lower);
   // worktop with an opening for the sink
-  const ox0=sc-.38, ox1=sc+.38, oz0=.07, oz1=STY.sink==='apron'?CTD+.02:.5;
+  const ox0=sc-.38, ox1=sc+.38, oz0=.12, oz1=STY.sink==='apron'?CTD+.02:.54;   // opening starts 120 off the wall so the tap stands on the worktop
   B(gn,.62,topY,0,2.08,STY.topT,oz0,M.top);
   if(STY.sink!=='apron')B(gn,.62,topY,oz1,2.08,STY.topT,CTD-oz1,M.top);
   B(gn,.62,topY,oz0,ox0-.62,STY.topT,CTD-oz0,M.top); B(gn,ox1,topY,oz0,2.70-ox1,STY.topT,CTD-oz0,M.top);
@@ -756,7 +756,8 @@ function buildKitchen(){
   B(gn,2.19,up0-.012,UD-.06,.49,.008,.02,M.led,false);
   // plant + soap by the sink
   C(gn,.08,.16,2.45,WT+.08,.28,state.style==='med'?M.terra:M.potWhite,null,24,.065); for(let k=0;k<9;k++)S(gn,.06,2.45+(rnd()-.5)*.12,WT+.2+rnd()*.12,.28+(rnd()-.5)*.12,k%2?M.plant:M.plant2,1,.7,1);
-  C(gn,.025,.14,sc+.3,WT+.07,.1,M.jarGlass); C(gn,.01,.03,sc+.3,WT+.15,.1,M.hw);
+  // soap pump on the worktop beside the sink, clear of the rim
+  C(gn,.028,.15,ox1+.09,WT+.075,.16,M.jarGlass,null,20); C(gn,.024,.11,ox1+.09,WT+.055,.16,std({color:'#e9dfc8',roughness:.3}),null,20); C(gn,.012,.03,ox1+.09,WT+.165,.16,M.hw); B(gn,ox1+.09-.004,WT+.172,.16,.008,.008,.045,M.hw);
 
   // ---- island
   island(K);
@@ -827,7 +828,7 @@ function sink(p,sc,ox0,ox1,oz0,oz1,topY){
     C(p,.032,.004,sc,WT-.197,cz,M.chrome,null,24); C(p,.022,.005,sc,WT-.196,cz,M.steelDark,null,24);
   }
   // tap at the back
-  const tm=STY.pull==='bar'?M.hw:M.hw, z=.035, y=WT;
+  const tm=M.hw, z=.055, y=WT;   // tap centred on the worktop strip behind the sink rim
   if(STY.sink==='apron'||state.style==='med'){
     // bridge mixer
     C(p,.022,.05,sc-.1,y+.025,z,tm); C(p,.022,.05,sc+.1,y+.025,z,tm);
