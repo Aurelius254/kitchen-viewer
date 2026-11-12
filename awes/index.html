@@ -146,7 +146,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
           <dt>Island</dt><dd id="ks-island">1550 × 890, 1200 walkways</dd>
           <dt>Window</dt><dd>1770 wide, sill 1070</dd>
           <dt>Pass-through</dt><dd>970 × 1550, sill 1070</dd>
-          <dt>Doors</dt><dd>Two grilled metal: 970 and 700</dd>
+          <dt>Doors</dt><dd>Grilled metal 970 (north), open entry 770 (east)</dd>
           <dt>Utility</dt><dd>840 wide under-stairs opening, 1050 to 640 high</dd>
         </dl>
       </div>
@@ -610,7 +610,7 @@ function shelfDecor(p,x,w,y,i){
 /* ---------------------------------------------------------------- the room */
 let ROOT, WALLS={}, CEIL, OUTSIDE=[];
 const UT=[1.05,.64];
-const ED1=D-.77, ED0=ED1-.70;   // east grilled door: 700 wide, its south jamb 770 from the south-east corner   // utility opening heights at its north and south jambs
+const ED1=D-.70, ED0=ED1-.77;   // east entryway: open, 770 wide, its south jamb 700 from the south-east corner   // utility opening heights at its north and south jambs
 function buildRoom(){
   const R=new THREE.Group(); ROOT.add(R);
   // floor
@@ -637,11 +637,14 @@ function buildRoom(){
   OUTSIDE.push(plane(gN,4.5,3,M.sky,1.3,1.9,-1.6));
   if(state.style==='farm'){const bl=std({map:ctex('blind',512,[.5,.5],(g,s)=>{g.fillStyle='#efe7d6';g.fillRect(0,0,s,s);for(let i=0;i<220;i++){g.fillStyle=rnd()<.5?'#8ea383':'#c49b62';g.beginPath();g.ellipse(rnd()*s,rnd()*s,5,2.5,rnd()*3,0,7);g.fill();}}),roughness:.9});
     for(let k=0;k<3;k++)B(gN,wx0+.02,wy1-.12-k*.08,.005,wx1-wx0-.04,.08,.02+k*.006,bl);}
-  // grilled metal doors: north (x 2.70-3.67, 970 wide) and east side door (700 wide, 770 from the south-east corner)
+  // grilled metal door on the north wall (x 2.70-3.67, 970 wide); the east wall has an open entryway instead
   const md=std({color:'#3b3d3f',metalness:.6,roughness:.45});
   grilledDoor(gN,2.70,3.67,-T*.5,0,md);
-  const ge=new THREE.Group(); ge.position.set(W+T*.5,0,0); ge.rotation.y=-Math.PI/2; gE.add(ge);
-  grilledDoor(ge,ED0,ED1,0,0,md);
+  { // open entryway on the east wall: cased opening, no door
+    const tr=state.style==='farm'?M.door:finMat('white');
+    B(gE,W-.012,0,ED0-.06,.02,2.16,.06,tr); B(gE,W-.012,0,ED1,.02,2.16,.06,tr); B(gE,W-.012,2.10,ED0-.06,.02,.06,ED1-ED0+.12,tr);
+    OUTSIDE.push(plane(gE,1.6,1.6,M.floor,W+T+.8,.001,(ED0+ED1)/2,-Math.PI/2));
+  }
   OUTSIDE.push(plane(gN,1.4,2.4,M.beyond,3.185,1.2,-1.0));
   OUTSIDE.push(plane(gE,1.2,2.4,M.beyond,W+1.0,1.2,(ED0+ED1)/2,0,-Math.PI/2));
   // pass-through (south, x 2.70-3.67, 1.07-2.62)
@@ -655,6 +658,8 @@ function buildRoom(){
     const so=plane(gE,1.4,len+.1,std({color:'#cfc8bb',roughness:.95}),W+T+.7,(UT[0]+UT[1])/2+.01,.82,Math.PI/2+ang,0); OUTSIDE.push(so); so.rotation.order='YXZ'; }
   OUTSIDE.push(plane(gE,1.4,1.0,std({color:'#8f8a80',roughness:.95}),W+T+.7,.001,.82,-Math.PI/2));
   OUTSIDE.push(plane(gE,1.0,1.2,std({color:'#b9b2a6',roughness:.95}),W+T+1.4,.6,.82,0,-Math.PI/2));
+  // north-west corner pier (column / duct box), full height
+  B(gW,0,0,0,.17,H,.27,M.wall);
   // sockets (west wall above the worktop, south wall low)
   for(const z of [1.0,2.45])B(gW,.012,1.12,z-.043,.01,.086,.086,M.socket);
   for(const x of [1.16,2.26])B(gS,x-.043,.3,D-.012,.086,.086,.012,M.socket);
@@ -701,19 +706,19 @@ function buildKitchen(){
   hood(gw,hx);
   const st=state.style;
   const westUppers=st==='modern'
-    ? [{w:.76,t:'niche',nh:.42},{w:.6,t:'doors'},{w:.6,t:'doors',y0:2.05,hood:true},{w:.66,t:'doors'},{w:.45,t:'doors',h:'l'}]
+    ? [{w:.76,t:'niche',nh:.42},{w:.6,t:'doors'},{w:.6,t:'doors',y0:2.05,hood:true},{w:.84,t:'doors',n:2}]
     : st==='med'
-    ? [{w:.76,t:'doors',n:2},{w:.6,t:'shelves',n:2},{w:.6,t:'gap'},{w:.6,t:'shelves',n:2},{w:.51,t:'doors',h:'l'}]
-    : [{w:.76,t:'shelves',n:3},{w:.6,t:'glass',n:1,h:'r'},{w:.6,t:'gap'},{w:.6,t:'glass',n:1,h:'l'},{w:.51,t:'doors',h:'l'}];
+    ? [{w:.76,t:'doors',n:2},{w:.6,t:'shelves',n:2},{w:.6,t:'gap'},{w:.84,t:'shelves',n:2}]
+    : [{w:.76,t:'shelves',n:3},{w:.6,t:'glass',n:1,h:'r'},{w:.6,t:'gap'},{w:.84,t:'glass',n:2}];
   let ux=0;
   for(const s of westUppers){
     if(s.t==='gap'){ux+=s.w; continue;}
     if(s.hood){upperSection(gw,ux,{w:s.w,t:'doors'},s.y0,upTop,PAL.upper); ux+=s.w; continue;}
     upperSection(gw,ux,s,up0,upTop,PAL.upper); ux+=s.w;
   }
-  if(STY.crown){for(const [a,b] of st==='med'?[[0,.76],[2.56,3.07]]:[[.76,1.36],[1.96,3.07]])B(gw,a-.01,upTop,0,b-a+.02,.05,UD+.03,finMat(PAL.upper));}
+  if(STY.crown){for(const [a,b] of st==='med'?[[0,.76]]:[[.76,1.36],[1.96,2.8]])B(gw,a-.01,upTop,0,b-a+.02,.05,UD+.03,finMat(PAL.upper));}
   // LED strip under the uppers
-  B(gw,.02,up0-.012,UD-.06,LW-.04,.008,.02,M.led,false);
+  B(gw,.02,up0-.012,UD-.06,2.78,.008,.02,M.led,false);
   // coffee station on the worktop (local x 0-.76)
   coffeeStation(gw,topY+STY.topT);
 
