@@ -187,7 +187,12 @@ const PALETTES={
   'espresso':{name:'Espresso', lower:'espresso', upper:'taupe', tall:'charcoal', island:'cognac'},
   'deep-teal':{name:'Deep teal', lower:'teal', upper:'cream', tall:'sand', island:'tanwood'},
   'mocha':{name:'Mocha', lower:'mocha', upper:'peach', tall:'graphite', island:'caramel'},
-  'forest':{name:'Forest green', lower:'forest', upper:'sage', tall:'deepteal', island:'apricot'}
+  'forest':{name:'Forest green', lower:'forest', upper:'sage', tall:'deepteal', island:'apricot'},
+  // single-colour cabinet boards (no Blender renders)
+  'slate-teal':{name:'Slate teal', lower:'slateteal', upper:'slateteal', tall:'slateteal', island:'slateteal'},
+  'dusty-blue':{name:'Dusty blue', lower:'dustyblue', upper:'dustyblue', tall:'dustyblue', island:'dustyblue'},
+  'greige':{name:'Greige', lower:'greige', upper:'greige', tall:'greige', island:'greige'},
+  'navy':{name:'Navy', lower:'navy', upper:'navy', tall:'navy', island:'navy'}
 };
 const FIN={
   green:{modern:'#8b9a7f', med:'#7b8a5f', farm:'#86998a'},
@@ -198,7 +203,8 @@ const FIN={
   espresso:['#4b2c1c','#2f190f','#6a4128'], taupe:'#7a6450', charcoal:'#4d4a44', cognac:['#9a5528','#71391a','#ba7340'],
   teal:'#105057', cream:'#e8e2d8', sand:'#c8b49e', tanwood:['#b47a4f','#8e5c36','#cf9a6c'],
   mocha:['#653f29','#47291a','#835639'], peach:'#ebcbb0', graphite:'#625f5d', caramel:['#ae7f62','#8a5f45','#c99c7f'],
-  forest:'#1a5547', sage:'#6f8663', deepteal:'#07313b', apricot:'#e9925a'
+  forest:'#1a5547', sage:'#6f8663', deepteal:'#07313b', apricot:'#e9925a',
+  slateteal:'#2a4547', dustyblue:'#56718a', greige:'#aaa293', navy:'#172e4e'
 };
 const FV=(k,s)=>{const v=FIN[k]; return (typeof v==='string'||Array.isArray(v))?v:v[s];};   // finish value for a style
 const FIN_NAME={
@@ -208,7 +214,8 @@ const FIN_NAME={
   oak:{modern:'light oak', med:'light oak', farm:'light oak'},
   petrol:'petrol blue', rustwood:'rust cedar', espresso:'espresso wood', taupe:'warm taupe', charcoal:'charcoal', cognac:'cognac wood',
   teal:'deep teal', cream:'warm cream', sand:'sand', tanwood:'tan oak', mocha:'mocha wood', peach:'soft peach', graphite:'graphite',
-  caramel:'caramel wood', forest:'forest green', sage:'sage', deepteal:'deep teal', apricot:'apricot'
+  caramel:'caramel wood', forest:'forest green', sage:'sage', deepteal:'deep teal', apricot:'apricot',
+  slateteal:'slate teal', dustyblue:'dusty blue', greige:'greige', navy:'navy blue'
 };
 const state={style:'modern', palette:'green-white', island:'stools', pt:'off'};
 try{const s=JSON.parse(localStorage.getItem('kitchen-studio')||'{}'); if(STYLES[s.style])state.style=s.style; if(PALETTES[s.palette])state.palette=s.palette; if(s.island==='plain'||s.island==='stools')state.island=s.island; if(s.pt==='on'||s.pt==='off')state.pt=s.pt;}catch(e){}
@@ -397,7 +404,7 @@ function finMat(kind){
   return FINC[kind]=m;
 }
 function topKind(){if(state.style==='med')return 'travertine'; if(state.style==='farm')return 'marble'; return (PAL.lower==='walnut'&&PAL.upper==='walnut')?'charcoal':'quartz';}
-function hwKind(){if(state.style==='med')return 'iron'; if(state.style==='farm')return 'brass'; return (PAL.lower==='walnut'||PAL.upper==='oak'||PAL.tall==='walnut'||['rust-teal','espresso','deep-teal','mocha','forest'].includes(state.palette))?'brass':'black';}
+function hwKind(){if(state.style==='med')return 'iron'; if(state.style==='farm')return 'brass'; return (PAL.lower==='walnut'||PAL.upper==='oak'||PAL.tall==='walnut'||['rust-teal','espresso','deep-teal','mocha','forest','slate-teal','dusty-blue','greige','navy'].includes(state.palette))?'brass':'black';}
 let M={};
 function makeMats(){
   for(const k in FINC)delete FINC[k];
@@ -1068,7 +1075,8 @@ camera.position.copy(VIEWS.overview.p); controls.target.copy(VIEWS.overview.t);
 
 /* ---------------------------------------------------------------- UI */
 const SWATCH={green:['green','green'],brown:['walnut','walnut'],white:['white','white'],'brown-white':['walnut','white'],'green-white':['green','white'],'brown-green':['walnut','green'],
-  'rust-teal':['rustwood','petrol'],espresso:['espresso','charcoal'],'deep-teal':['teal','cream'],mocha:['mocha','peach'],forest:['forest','apricot']};
+  'rust-teal':['rustwood','petrol'],espresso:['espresso','charcoal'],'deep-teal':['teal','cream'],mocha:['mocha','peach'],forest:['forest','apricot'],
+  'slate-teal':['slateteal','slateteal'],'dusty-blue':['dustyblue','dustyblue'],greige:['greige','greige'],navy:['navy','navy']};
 function swColor(k){const v=FV(k,state.style); return typeof v==='string'?v:v[0];}
 const swWrap=document.getElementById('swatches');
 for(const key of Object.keys(PALETTES)){
