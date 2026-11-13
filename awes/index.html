@@ -181,19 +181,34 @@ const PALETTES={
   'white':{name:'White', lower:'white', upper:'white', tall:'white', island:'white'},
   'brown-white':{name:'Brown & white', lower:'walnut', upper:'white', tall:'walnut', island:'walnut'},
   'green-white':{name:'Green & white', lower:'green', upper:'white', tall:'white', island:'green'},
-  'brown-green':{name:'Brown & green', lower:'green', upper:'walnut', tall:'walnut', island:'walnut'}
+  'brown-green':{name:'Brown & green', lower:'green', upper:'walnut', tall:'walnut', island:'walnut'},
+  // from the client's palette boards (no Blender renders)
+  'rust-teal':{name:'Rust & teal', lower:'petrol', upper:'white', tall:'rustwood', island:'rustwood'},
+  'espresso':{name:'Espresso', lower:'espresso', upper:'taupe', tall:'charcoal', island:'cognac'},
+  'deep-teal':{name:'Deep teal', lower:'teal', upper:'cream', tall:'sand', island:'tanwood'},
+  'mocha':{name:'Mocha', lower:'mocha', upper:'peach', tall:'graphite', island:'caramel'},
+  'forest':{name:'Forest green', lower:'forest', upper:'sage', tall:'deepteal', island:'apricot'}
 };
 const FIN={
   green:{modern:'#8b9a7f', med:'#7b8a5f', farm:'#86998a'},
   white:{modern:'#ecebe6', med:'#efe6d4', farm:'#f2eee5'},
   walnut:{modern:['#a98563','#8d6c4f','#c2a07e'], med:['#a98563','#8d6c4f','#c2a07e'], farm:['#a98563','#8d6c4f','#c2a07e']},
-  oak:{modern:['#c09b6b','#9a7749','#dcbb8b'], med:['#b98f5e','#93703f','#d4ad7c'], farm:['#c29c69','#9b7848','#dcbb89']}
+  oak:{modern:['#c09b6b','#9a7749','#dcbb8b'], med:['#b98f5e','#93703f','#d4ad7c'], farm:['#c29c69','#9b7848','#dcbb89']},
+  petrol:'#0a4758', rustwood:['#97512c','#713a1d','#b4693f'],
+  espresso:['#4b2c1c','#2f190f','#6a4128'], taupe:'#7a6450', charcoal:'#4d4a44', cognac:['#9a5528','#71391a','#ba7340'],
+  teal:'#105057', cream:'#e8e2d8', sand:'#c8b49e', tanwood:['#b47a4f','#8e5c36','#cf9a6c'],
+  mocha:['#653f29','#47291a','#835639'], peach:'#ebcbb0', graphite:'#625f5d', caramel:['#ae7f62','#8a5f45','#c99c7f'],
+  forest:'#1a5547', sage:'#6f8663', deepteal:'#07313b', apricot:'#e9925a'
 };
+const FV=(k,s)=>{const v=FIN[k]; return (typeof v==='string'||Array.isArray(v))?v:v[s];};   // finish value for a style
 const FIN_NAME={
   green:{modern:'sage green matte', med:'olive green', farm:'sage green'},
   white:{modern:'warm white', med:'chalk white', farm:'cream white'},
   walnut:{modern:'honey walnut', med:'honey walnut', farm:'honey walnut'},
-  oak:{modern:'light oak', med:'light oak', farm:'light oak'}
+  oak:{modern:'light oak', med:'light oak', farm:'light oak'},
+  petrol:'petrol blue', rustwood:'rust cedar', espresso:'espresso wood', taupe:'warm taupe', charcoal:'charcoal', cognac:'cognac wood',
+  teal:'deep teal', cream:'warm cream', sand:'sand', tanwood:'tan oak', mocha:'mocha wood', peach:'soft peach', graphite:'graphite',
+  caramel:'caramel wood', forest:'forest green', sage:'sage', deepteal:'deep teal', apricot:'apricot'
 };
 const state={style:'modern', palette:'green-white', island:'stools', pt:'off'};
 try{const s=JSON.parse(localStorage.getItem('kitchen-studio')||'{}'); if(STYLES[s.style])state.style=s.style; if(PALETTES[s.palette])state.palette=s.palette; if(s.island==='plain'||s.island==='stools')state.island=s.island; if(s.pt==='on'||s.pt==='off')state.pt=s.pt;}catch(e){}
@@ -232,7 +247,7 @@ function ctex(key,size,meters,draw){
   return TEXC[key]=t;
 }
 function woodTex(kind,style){
-  const [base,dark,light]=FIN[kind][style];
+  const [base,dark,light]=FV(kind,style);
   return ctex(`wood-${kind}-${style}`,1024,[.7,1.4],(g,s)=>{
     g.fillStyle=base; g.fillRect(0,0,s,s);
     for(let i=0;i<34;i++){g.fillStyle=rgba(rnd()<.5?dark:light,.07+rnd()*.07); g.fillRect(rnd()*s,0,12+rnd()*70,s);}
@@ -376,13 +391,13 @@ function finMat(kind){
   if(FINC[kind])return FINC[kind];
   const s=state.style;
   let m;
-  if(kind==='green')m=std({color:FIN.green[s],roughness:.62});
-  else if(kind==='white')m=std({color:FIN.white[s],roughness:.5});
+  const v=FV(kind,s);
+  if(typeof v==='string')m=std({color:v,roughness:kind==='white'||kind==='cream'?.5:.6});
   else m=std({map:woodTex(kind,s),roughness:.52});
   return FINC[kind]=m;
 }
 function topKind(){if(state.style==='med')return 'travertine'; if(state.style==='farm')return 'marble'; return (PAL.lower==='walnut'&&PAL.upper==='walnut')?'charcoal':'quartz';}
-function hwKind(){if(state.style==='med')return 'iron'; if(state.style==='farm')return 'brass'; return (PAL.lower==='walnut'||PAL.upper==='oak'||PAL.tall==='walnut')?'brass':'black';}
+function hwKind(){if(state.style==='med')return 'iron'; if(state.style==='farm')return 'brass'; return (PAL.lower==='walnut'||PAL.upper==='oak'||PAL.tall==='walnut'||['rust-teal','espresso','deep-teal','mocha','forest'].includes(state.palette))?'brass':'black';}
 let M={};
 function makeMats(){
   for(const k in FINC)delete FINC[k];
@@ -1052,8 +1067,9 @@ document.querySelectorAll('.views button').forEach(b=>b.addEventListener('click'
 camera.position.copy(VIEWS.overview.p); controls.target.copy(VIEWS.overview.t);
 
 /* ---------------------------------------------------------------- UI */
-const SWATCH={green:['green','green'],brown:['walnut','walnut'],white:['white','white'],'brown-white':['walnut','white'],'green-white':['green','white'],'brown-green':['walnut','green']};
-function swColor(k){const s=state.style; return k==='green'?FIN.green[s]:k==='white'?FIN.white[s]:FIN[k][s][0];}
+const SWATCH={green:['green','green'],brown:['walnut','walnut'],white:['white','white'],'brown-white':['walnut','white'],'green-white':['green','white'],'brown-green':['walnut','green'],
+  'rust-teal':['rustwood','petrol'],espresso:['espresso','charcoal'],'deep-teal':['teal','cream'],mocha:['mocha','peach'],forest:['forest','apricot']};
+function swColor(k){const v=FV(k,state.style); return typeof v==='string'?v:v[0];}
 const swWrap=document.getElementById('swatches');
 for(const key of Object.keys(PALETTES)){
   const b=document.createElement('button'); b.className='sw'; b.setAttribute('role','radio'); b.id='p-'+key; b.dataset.palette=key;
@@ -1076,7 +1092,7 @@ function updateUI(){
   });
 }
 function specRows(){
-  const s=state.style, n=k=>FIN_NAME[k][s];
+  const s=state.style, n=k=>typeof FIN_NAME[k]==='string'?FIN_NAME[k]:FIN_NAME[k][s];
   const cab=PAL.lower===PAL.upper&&PAL.upper===PAL.tall?`All ${n(PAL.lower)}`:`${cap(n(PAL.lower))} base units, ${n(PAL.upper)} wall cabinets`+(PAL.tall!==PAL.upper&&PAL.tall!==PAL.lower?`, ${n(PAL.tall)} tall units`:PAL.tall===PAL.lower&&PAL.tall!==PAL.upper?' (tall units match the base)':'');
   const top={quartz:'White quartz',charcoal:'Charcoal stone',travertine:'Honed travertine',marble:'White marble'}[topKind()];
   const doors={slab:'Flat slab, slim bar pulls',['shaker-wide']:'Wide-frame panel, iron knobs',shaker:'Shaker, brass cup pulls and knobs'}[STY.door];
