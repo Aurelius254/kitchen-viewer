@@ -175,8 +175,8 @@ const STYLES={
   farm:{name:'Farmhouse', door:'shaker', pull:'cup', topT:.04, upperTop:2.4, crown:true, ceiling:'flat', floor:'oak', splash:'subway',
           wall:'#ece8de', hood:'canopy', sink:'apron', pend:'dome', stool:'cross', rug:'floral', frame:'#f1efe9', drawerOverDoor:true}
 };
-// Light colours on wall cabinets and tall units (openness), heavier tones on base cabinets (anchor),
-// the boldest colour saved for the island (focal point). Ordered lightest first.
+// Palette layout: 1st colour = base cabinets + island, 2nd = wall cabinets + full-height units,
+// 3rd = walls, 4th = one special feature (ceiling or floor). Lighter colours go higher.
 const PALETTES={
   // Single colour, lightest first
   'white':{name:'White', lower:'white', upper:'white', tall:'white', island:'white'},
@@ -189,14 +189,14 @@ const PALETTES={
   // Two colours, lightest first
   'green-white':{name:'Green & white', lower:'green', upper:'white', tall:'white', island:'green'},
   'brown-white':{name:'Brown & white', lower:'walnut', upper:'white', tall:'white', island:'walnut'},
-  // Three or more colours, lightest first
-  'brown-green':{name:'Brown & green', lower:'walnut', upper:'oak', tall:'white', island:'green'},
-  'teal':{name:'Teal', lower:'tanwood', upper:'cream', tall:'cream', island:'teal',
-          wall:'#ebe6dd', ceiling:'#f3efe8', feature:{wall:'south', color:'#c8b49e', name:'sand'}, wallName:'warm cream'},
-  'mocha':{name:'Mocha', lower:'mocha', upper:'caramel', tall:'caramel', island:'espresso',
-          wall:'#f2ddcb', ceiling:'#f8efe6', feature:{wall:'south', color:'#625f5d', name:'warm grey'}, wallName:'soft peach'},
-  'espresso':{name:'Espresso', lower:'darkbrown', upper:'tanbrown', tall:'taupe', island:'rustwood',
-          wall:'#e6ded4', ceiling:'#efe9e2', feature:{wall:'south', color:'#33302b', name:'charcoal'}, wallName:'light greige'}
+  'brown-green':{name:'Brown & green', lower:'walnut', upper:'green', tall:'green', island:'walnut'},
+  // Three or more colours (walls, then a ceiling or floor feature), lightest first
+  'teal':{name:'Teal', lower:'teal', upper:'tanwood', tall:'tanwood', island:'teal',
+          wall:'#ebe6dd', wallName:'warm cream', feat:{at:'floor', color:'#c8b49e', name:'sand rug'}},
+  'mocha':{name:'Mocha', lower:'mocha', upper:'caramel', tall:'caramel', island:'mocha',
+          wall:'#efc6a4', wallName:'soft peach', feat:{at:'ceiling', color:'#2b1d14', name:'dark espresso ceiling feature'}},
+  'espresso':{name:'Espresso', lower:'darkbrown', upper:'rustwood', tall:'rustwood', island:'darkbrown',
+          wall:'#d6ad84', wallName:'warm tan', feat:{at:'ceiling', color:'#3a3732', name:'charcoal ceiling feature'}}
 };
 const FIN={
   green:{modern:'#8b9a7f', med:'#7b8a5f', farm:'#86998a'},
@@ -422,7 +422,7 @@ function makeMats(){
     splash:std({map:splashTex(STY.splash),roughness:STY.splash==='subway'?.15:.35}),
     floor:std({map:floorTex(STY.floor),roughness:STY.floor==='porcelain'?.22:STY.floor==='oak'?.55:.72,envMapIntensity:STY.floor==='porcelain'?1:.5}),
     wall:STY.wall==='limewash'?std({map:wallTex(),color:PAL.wall?tintOn(PAL.wall):'#ffffff',roughness:.95,envMapIntensity:.4}):std({color:PAL.wall||STY.wall,roughness:.92,envMapIntensity:.4}),
-    feature:PAL.feature?std({color:PAL.feature.color,roughness:.9,envMapIntensity:.35}):null,
+    feat:PAL.feat?std({color:PAL.feat.color,roughness:PAL.feat.at==='floor'?.95:.6,envMapIntensity:.3}):null,
     ceiling:std({color:PAL.ceiling||(STY.ceiling==='beams'?'#efe6d6':'#f6f5f1'),roughness:.95,envMapIntensity:.3}),
     hw:std(hw), hwDouble:std(Object.assign({side:THREE.DoubleSide},hw)),
     steel:std({color:'#c5c9cc',metalness:.9,roughness:.3}), steelDark:std({color:'#8a8f93',metalness:.85,roughness:.35}),
@@ -699,14 +699,19 @@ function buildRoom(){
   plane(CEIL,W,D,M.ceiling,W/2,H,D/2,Math.PI/2);
   if(STY.ceiling==='tray'){
     const bw=.45, by=H-.2;
-    B(CEIL,0,by,0,W,.2,bw,M.ceiling,false); B(CEIL,0,by,D-bw,W,.2,bw,M.ceiling,false);
-    B(CEIL,0,by,bw,bw,.2,D-2*bw,M.ceiling,false); B(CEIL,W-bw,by,bw,bw,.2,D-2*bw,M.ceiling,false);
+    const tm=(PAL.feat&&PAL.feat.at==='ceiling'?M.feat:M.ceiling);   // tray band takes the ceiling feature colour
+    B(CEIL,0,by,0,W,.2,bw,tm,false); B(CEIL,0,by,D-bw,W,.2,bw,tm,false);
+    B(CEIL,0,by,bw,bw,.2,D-2*bw,tm,false); B(CEIL,W-bw,by,bw,bw,.2,D-2*bw,tm,false);
     for(const [x,z,w,d] of [[bw,bw-.02,W-2*bw,.02],[bw,D-bw,W-2*bw,.02],[bw-.02,bw,.02,D-2*bw],[W-bw,bw,.02,D-2*bw]])B(CEIL,x,H-.05,z,w,.012,d,M.led,false);
     for(const [x,z] of [[.9,.22],[2.0,.22],[3.1,.22],[.9,D-.22],[2.0,D-.22],[3.1,D-.22],[W-.22,1.4],[W-.22,3.0]]){const m=C(CEIL,.035,.004,x,by-.002,z,M.bulb); m.castShadow=false;}
   } else if(STY.ceiling==='beams'){
-    for(const z of [.75,1.65,2.55,3.45,4.25])B(CEIL,0,H-.17,z-.07,W,.17,.14,M.darkWood,false);
+    for(const z of [.75,1.65,2.55,3.45,4.25])B(CEIL,0,H-.17,z-.07,W,.17,.14,PAL.feat&&PAL.feat.at==='ceiling'?M.feat:M.darkWood,false);
   } else {
-    for(const [x,z] of [[.9,1.0],[.9,2.4],[.9,3.6],[3.2,1.0],[3.2,3.6]]){const m=C(CEIL,.045,.004,x,H-.002,z,M.bulb); m.castShadow=false;}
+    if(PAL.feat&&PAL.feat.at==='ceiling'){   // painted feature panel with a trim, over the centre of the room
+      B(CEIL,.95,H-.03,1.05,2.0,.03,2.75,M.feat,false);
+      for(const [x,z,w,d] of [[.92,1.02,2.06,.03],[.92,3.8,2.06,.03],[.92,1.02,.03,2.81],[2.95,1.02,.03,2.81]])B(CEIL,x,H-.045,z,w,.045,d,M.ceiling,false);
+    }
+    for(const [x,z] of [[.9,1.0],[.9,2.4],[.9,3.6],[3.2,1.0],[3.2,3.6]]){const m=C(CEIL,.045,.004,x,H-.002-(PAL.feat&&PAL.feat.at==='ceiling'&&x<3?.03:0),z,M.bulb); m.castShadow=false;}
   }
 }
 
@@ -970,7 +975,12 @@ function island(K){
   // pendants over the island
   pendants(K,(xw+xe)/2,z0+L/2);
   // rug
-  if(STY.rug){const r=STY.rug==='jute'?rugTex('jute'):rugTex('floral'); const m=plane(K,.8,2.4,std({map:r,roughness:.95,envMapIntensity:.2}),1.21,.004,1.95+dz,-Math.PI/2); m.receiveShadow=true;}
+  if(PAL.feat&&PAL.feat.at==='floor'){
+    const rx=(xw+xe)/2+(state.island==='stools'?.25:0), rz=z0+L/2;
+    plane(K,2.1,2.7,M.feat,rx,.003,rz,-Math.PI/2);
+    plane(K,1.9,2.5,std({color:new THREE.Color(PAL.feat.color).multiplyScalar(.82),roughness:.95,envMapIntensity:.2}),rx,.004,rz,-Math.PI/2);
+    plane(K,1.82,2.42,M.feat,rx,.005,rz,-Math.PI/2);
+  } else if(STY.rug){const r=STY.rug==='jute'?rugTex('jute'):rugTex('floral'); const m=plane(K,.8,2.4,std({map:r,roughness:.95,envMapIntensity:.2}),1.21,.004,1.95+dz,-Math.PI/2); m.receiveShadow=true;}
   if(state.pt==='on')passCabinet(K);
 }
 // base cabinet under the south pass-through: from the east wall west to 1200 clear of the fridge front (clear of the 700 east door)
@@ -1052,7 +1062,6 @@ function rebuild(){
   makeMats();
   ROOT=new THREE.Group(); scene.add(ROOT);
   buildRoom(); buildKitchen(); buildLights();
-  if(PAL.feature&&WALLS[PAL.feature.wall])WALLS[PAL.feature.wall].traverse(o=>{if(o.isMesh&&o.material===M.wall)o.material=M.feature;});
   updateSpec(); updateUI(); if(typeof updatePdfNote==='function')updatePdfNote();
   try{localStorage.setItem('kitchen-studio',JSON.stringify(state))}catch(e){}
 }
@@ -1084,7 +1093,7 @@ document.querySelectorAll('.views button').forEach(b=>b.addEventListener('click'
 camera.position.copy(VIEWS.overview.p); controls.target.copy(VIEWS.overview.t);
 
 /* ---------------------------------------------------------------- UI */
-const SWATCH={green:['green','green'],brown:['walnut','walnut'],white:['white','white'],'brown-white':['walnut','white'],'green-white':['green','white'],'brown-green':['oak','green'],
+const SWATCH={green:['green','green'],brown:['walnut','walnut'],white:['white','white'],'brown-white':['walnut','white'],'green-white':['green','white'],'brown-green':['walnut','green'],
  
   'slate-teal':['slateteal','slateteal'],teal:['teal','cream'],mocha:['mocha','caramel'],espresso:['darkbrown','tanbrown'],'dusty-blue':['dustyblue','dustyblue'],greige:['greige','greige'],navy:['navy','navy']};
 function swColor(k){const v=FV(k,state.style); return typeof v==='string'?v:v[0];}
@@ -1106,7 +1115,7 @@ function updateUI(){
   document.getElementById('ks-island').textContent=on?'1550 × 890, walkways 1000 north and south, 1200 east and west':'1550 × 890, 1200 walkways';
   document.querySelectorAll('[data-palette]').forEach(b=>{
     b.setAttribute('aria-checked',String(b.dataset.palette===state.palette));
-    const P=PALETTES[b.dataset.palette], cols=[...new Set([P.upper,P.tall,P.lower,P.island].map(swColor).concat(P.feature?[P.feature.color]:[]))];
+    const P=PALETTES[b.dataset.palette], cols=[...new Set([P.upper,P.tall,P.lower,P.island].map(swColor).concat(P.wall?[P.wall]:[],P.feat?[P.feat.color]:[]))];
     const step=100/cols.length; b.querySelector('.dot').style.background=cols.length===1?cols[0]:`conic-gradient(${cols.map((c,i)=>`${c} ${i*step}% ${(i+1)*step}%`).join(',')})`;
   });
 }
@@ -1118,7 +1127,8 @@ function specRows(){
   const hw={brass:'Brushed brass',black:'Matte black',iron:'Black iron'}[hwKind()];
   return [
     ['Style',STY.name],['Cabinets',cab],['Doors',doors],['Hardware',hw],['Worktops',top],
-    ...(PAL.wall?[['Walls',`${cap(PAL.wallName)}, ${PAL.feature.name} feature wall behind the island`]]:[]),
+    ...(PAL.wall?[['Walls',cap(PAL.wallName)]]:[]),
+    ...(PAL.feat?[['Feature',cap(PAL.feat.name)]]:[]),
     ['Splashback',{slab:topKind()==='charcoal'?'Limestone slab':'Quartz slab',encaustic:'Blue and cream patterned tiles',subway:'White subway tiles'}[STY.splash]],
     ['Floor',{porcelain:'Large greige porcelain tiles',terracotta:'Terracotta tiles',oak:'Wide oak planks'}[STY.floor]],
     ['Sink',STY.sink==='apron'?'White apron-front sink, bridge tap':state.style==='med'?'Undermount steel, bridge tap':'Undermount steel, gooseneck tap'],
