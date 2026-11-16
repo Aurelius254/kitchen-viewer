@@ -1146,7 +1146,8 @@ function shot(name,w,h){
 }
 // Designs with Blender (Cycles) renders shipped beside the page in renders/<style>-<palette>-<island>-<view>.jpg
 const RENDERED=new Set(['modern-green-white-plain','med-green-plain','farm-green-white-stools',
-  'modern-green-white-plain-pt','med-green-plain-pt','farm-green-white-stools-pt']);
+  'modern-green-white-plain-pt','med-green-plain-pt','farm-green-white-stools-pt',
+  'modern-brown-white-stools','med-brown-white-stools','modern-brown-white-stools-pt','med-brown-white-stools-pt']);
 async function loadRender(key,view){
   try{const r=await fetch(`renders/${key}-${view}.jpg`); if(!r.ok)return null; const b=await r.blob();
     return await new Promise(res=>{const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(null); fr.readAsDataURL(b);});}catch(e){return null;}
