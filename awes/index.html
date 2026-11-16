@@ -184,9 +184,16 @@ const PALETTES={
   'brown-white':{name:'Brown & white', lower:'walnut', upper:'white', tall:'white', island:'walnut'},
   'dusty-blue':{name:'Dusty blue', lower:'dustyblue', upper:'dustyblue', tall:'dustyblue', island:'dustyblue'},
   'brown-green':{name:'Brown & green', lower:'walnut', upper:'oak', tall:'white', island:'green'},
+  // multi-colour boards: the extra colours go on the walls, a feature wall and the ceiling
+  'teal':{name:'Teal', lower:'tanwood', upper:'cream', tall:'cream', island:'teal',
+          wall:'#ebe6dd', ceiling:'#f3efe8', feature:{wall:'south', color:'#c8b49e', name:'sand'}, wallName:'warm cream'},
   'green':{name:'Green', lower:'green', upper:'green', tall:'green', island:'green'},
   'brown':{name:'Brown', lower:'walnut', upper:'walnut', tall:'walnut', island:'walnut'},
+  'mocha':{name:'Mocha', lower:'mocha', upper:'caramel', tall:'caramel', island:'espresso',
+          wall:'#f2ddcb', ceiling:'#f8efe6', feature:{wall:'south', color:'#625f5d', name:'warm grey'}, wallName:'soft peach'},
   'slate-teal':{name:'Slate teal', lower:'slateteal', upper:'slateteal', tall:'slateteal', island:'slateteal'},
+  'espresso':{name:'Espresso', lower:'darkbrown', upper:'tanbrown', tall:'taupe', island:'rustwood',
+          wall:'#e6ded4', ceiling:'#efe9e2', feature:{wall:'south', color:'#33302b', name:'charcoal'}, wallName:'light greige'},
   'navy':{name:'Navy', lower:'navy', upper:'navy', tall:'navy', island:'navy'}
 };
 const FIN={
@@ -199,6 +206,7 @@ const FIN={
   teal:'#105057', cream:'#e8e2d8', sand:'#c8b49e', tanwood:['#b47a4f','#8e5c36','#cf9a6c'],
   mocha:['#653f29','#47291a','#835639'], peach:'#ebcbb0', graphite:'#625f5d', caramel:['#ae7f62','#8a5f45','#c99c7f'],
   forest:'#1a5547', sage:'#6f8663', deepteal:'#07313b', apricot:'#e9925a',
+  darkbrown:['#3d1e10','#29130a','#56301c'], tanbrown:['#be8450','#9a6638','#d39c69'],
   slateteal:'#2a4547', dustyblue:'#56718a', greige:'#aaa293', navy:'#172e4e'
 };
 const FV=(k,s)=>{const v=FIN[k]; return (typeof v==='string'||Array.isArray(v))?v:v[s];};   // finish value for a style
@@ -210,6 +218,7 @@ const FIN_NAME={
   petrol:'petrol blue', rustwood:'rust cedar', espresso:'espresso wood', taupe:'warm taupe', charcoal:'charcoal', cognac:'cognac wood',
   teal:'deep teal', cream:'warm cream', sand:'sand', tanwood:'tan oak', mocha:'mocha wood', peach:'soft peach', graphite:'graphite',
   caramel:'caramel wood', forest:'forest green', sage:'sage', deepteal:'deep teal', apricot:'apricot',
+  darkbrown:'dark espresso wood', tanbrown:'tan wood',
   slateteal:'slate teal', dustyblue:'dusty blue', greige:'greige', navy:'navy blue'
 };
 const state={style:'modern', palette:'white', island:'stools', pt:'off'};
@@ -399,8 +408,10 @@ function finMat(kind){
   return FINC[kind]=m;
 }
 function topKind(){if(state.style==='med')return 'travertine'; if(state.style==='farm')return 'marble'; return (PAL.lower==='walnut'&&PAL.upper==='walnut')?'charcoal':'quartz';}
-function hwKind(){if(state.style==='med')return 'iron'; if(state.style==='farm')return 'brass'; return (PAL.lower==='walnut'||PAL.upper==='oak'||PAL.tall==='walnut'||['slate-teal','dusty-blue','greige','navy'].includes(state.palette))?'brass':'black';}
+function hwKind(){if(state.style==='med')return 'iron'; if(state.style==='farm')return 'brass'; return (PAL.lower==='walnut'||PAL.upper==='oak'||PAL.tall==='walnut'||['slate-teal','dusty-blue','greige','navy','teal','mocha','espresso'].includes(state.palette))?'brass':'black';}
 let M={};
+// limewash texture is already warm cream; push the palette's wall colour through it gently
+function tintOn(hex){const c=new THREE.Color(hex), w=new THREE.Color('#ece1cc'); return new THREE.Color(Math.min(1,c.r/w.r),Math.min(1,c.g/w.g),Math.min(1,c.b/w.b));}
 function makeMats(){
   for(const k in FINC)delete FINC[k];
   const hw={brass:{color:'#c39a55',metalness:.95,roughness:.28}, black:{color:'#171717',metalness:.4,roughness:.38}, iron:{color:'#2a2724',metalness:.55,roughness:.55}}[hwKind()];
@@ -408,8 +419,9 @@ function makeMats(){
     top:std({map:stoneTex(topKind()),roughness:topKind()==='travertine'?.55:.22}),
     splash:std({map:splashTex(STY.splash),roughness:STY.splash==='subway'?.15:.35}),
     floor:std({map:floorTex(STY.floor),roughness:STY.floor==='porcelain'?.22:STY.floor==='oak'?.55:.72,envMapIntensity:STY.floor==='porcelain'?1:.5}),
-    wall:STY.wall==='limewash'?std({map:wallTex(),roughness:.95,envMapIntensity:.4}):std({color:STY.wall,roughness:.92,envMapIntensity:.4}),
-    ceiling:std({color:STY.ceiling==='beams'?'#efe6d6':'#f6f5f1',roughness:.95,envMapIntensity:.3}),
+    wall:STY.wall==='limewash'?std({map:wallTex(),color:PAL.wall?tintOn(PAL.wall):'#ffffff',roughness:.95,envMapIntensity:.4}):std({color:PAL.wall||STY.wall,roughness:.92,envMapIntensity:.4}),
+    feature:PAL.feature?std({color:PAL.feature.color,roughness:.9,envMapIntensity:.35}):null,
+    ceiling:std({color:PAL.ceiling||(STY.ceiling==='beams'?'#efe6d6':'#f6f5f1'),roughness:.95,envMapIntensity:.3}),
     hw:std(hw), hwDouble:std(Object.assign({side:THREE.DoubleSide},hw)),
     steel:std({color:'#c5c9cc',metalness:.9,roughness:.3}), steelDark:std({color:'#8a8f93',metalness:.85,roughness:.35}),
     chrome:std({color:'#e3e5e7',metalness:1,roughness:.1}),
@@ -1038,6 +1050,7 @@ function rebuild(){
   makeMats();
   ROOT=new THREE.Group(); scene.add(ROOT);
   buildRoom(); buildKitchen(); buildLights();
+  if(PAL.feature&&WALLS[PAL.feature.wall])WALLS[PAL.feature.wall].traverse(o=>{if(o.isMesh&&o.material===M.wall)o.material=M.feature;});
   updateSpec(); updateUI(); if(typeof updatePdfNote==='function')updatePdfNote();
   try{localStorage.setItem('kitchen-studio',JSON.stringify(state))}catch(e){}
 }
@@ -1071,7 +1084,7 @@ camera.position.copy(VIEWS.overview.p); controls.target.copy(VIEWS.overview.t);
 /* ---------------------------------------------------------------- UI */
 const SWATCH={green:['green','green'],brown:['walnut','walnut'],white:['white','white'],'brown-white':['walnut','white'],'green-white':['green','white'],'brown-green':['oak','green'],
  
-  'slate-teal':['slateteal','slateteal'],'dusty-blue':['dustyblue','dustyblue'],greige:['greige','greige'],navy:['navy','navy']};
+  'slate-teal':['slateteal','slateteal'],teal:['teal','cream'],mocha:['mocha','caramel'],espresso:['darkbrown','tanbrown'],'dusty-blue':['dustyblue','dustyblue'],greige:['greige','greige'],navy:['navy','navy']};
 function swColor(k){const v=FV(k,state.style); return typeof v==='string'?v:v[0];}
 const swWrap=document.getElementById('swatches');
 for(const key of Object.keys(PALETTES)){
@@ -1102,6 +1115,7 @@ function specRows(){
   const hw={brass:'Brushed brass',black:'Matte black',iron:'Black iron'}[hwKind()];
   return [
     ['Style',STY.name],['Cabinets',cab],['Doors',doors],['Hardware',hw],['Worktops',top],
+    ...(PAL.wall?[['Walls',`${cap(PAL.wallName)}, ${PAL.feature.name} feature wall behind the island`]]:[]),
     ['Splashback',{slab:topKind()==='charcoal'?'Limestone slab':'Quartz slab',encaustic:'Blue and cream patterned tiles',subway:'White subway tiles'}[STY.splash]],
     ['Floor',{porcelain:'Large greige porcelain tiles',terracotta:'Terracotta tiles',oak:'Wide oak planks'}[STY.floor]],
     ['Sink',STY.sink==='apron'?'White apron-front sink, bridge tap':state.style==='med'?'Undermount steel, bridge tap':'Undermount steel, gooseneck tap'],
