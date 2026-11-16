@@ -179,15 +179,15 @@ const PALETTES={
   'green':{name:'Green', lower:'green', upper:'green', tall:'green', island:'green'},
   'brown':{name:'Brown', lower:'walnut', upper:'walnut', tall:'walnut', island:'walnut'},
   'white':{name:'White', lower:'white', upper:'white', tall:'white', island:'white'},
-  'brown-white':{name:'Brown & white', lower:'walnut', upper:'white', tall:'walnut', island:'walnut'},
+  'brown-white':{name:'Brown & white', lower:'walnut', upper:'white', tall:'white', island:'walnut'},
   'green-white':{name:'Green & white', lower:'green', upper:'white', tall:'white', island:'green'},
-  'brown-green':{name:'Brown & green', lower:'green', upper:'walnut', tall:'walnut', island:'walnut'},
+  'brown-green':{name:'Brown & green', lower:'walnut', upper:'green', tall:'green', island:'walnut'},
   // from the client's palette boards (no Blender renders)
-  'rust-teal':{name:'Rust & teal', lower:'petrol', upper:'white', tall:'rustwood', island:'rustwood'},
-  'espresso':{name:'Espresso', lower:'espresso', upper:'taupe', tall:'charcoal', island:'cognac'},
-  'deep-teal':{name:'Deep teal', lower:'teal', upper:'cream', tall:'sand', island:'tanwood'},
-  'mocha':{name:'Mocha', lower:'mocha', upper:'peach', tall:'graphite', island:'caramel'},
-  'forest':{name:'Forest green', lower:'forest', upper:'sage', tall:'deepteal', island:'apricot'},
+  'rust-teal':{name:'Rust & teal', lower:'rustwood', upper:'petrol', tall:'petrol', island:'rustwood'},
+  'espresso':{name:'Espresso', lower:'espresso', upper:'charcoal', tall:'charcoal', island:'espresso'},
+  'deep-teal':{name:'Deep teal', lower:'teal', upper:'cream', tall:'cream', island:'teal'},
+  'mocha':{name:'Mocha', lower:'mocha', upper:'peach', tall:'peach', island:'mocha'},
+  'forest':{name:'Forest green', lower:'forest', upper:'apricot', tall:'apricot', island:'forest'},
   // single-colour cabinet boards (no Blender renders)
   'slate-teal':{name:'Slate teal', lower:'slateteal', upper:'slateteal', tall:'slateteal', island:'slateteal'},
   'dusty-blue':{name:'Dusty blue', lower:'dustyblue', upper:'dustyblue', tall:'dustyblue', island:'dustyblue'},
@@ -1133,8 +1133,8 @@ function shot(name,w,h){
   return url;
 }
 // Designs with Blender (Cycles) renders shipped beside the page in renders/<style>-<palette>-<island>-<view>.jpg
-const RENDERED=new Set(['modern-brown-white-stools','modern-green-white-plain','med-brown-white-stools','med-green-plain','farm-green-white-stools','farm-brown-green-plain',
-  'modern-brown-white-stools-pt','modern-green-white-plain-pt','med-brown-white-stools-pt','med-green-plain-pt','farm-green-white-stools-pt','farm-brown-green-plain-pt']);
+const RENDERED=new Set(['modern-green-white-plain','med-green-plain','farm-green-white-stools',
+  'modern-green-white-plain-pt','med-green-plain-pt','farm-green-white-stools-pt']);
 async function loadRender(key,view){
   try{const r=await fetch(`renders/${key}-${view}.jpg`); if(!r.ok)return null; const b=await r.blob();
     return await new Promise(res=>{const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(null); fr.readAsDataURL(b);});}catch(e){return null;}
