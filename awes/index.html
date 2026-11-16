@@ -178,23 +178,25 @@ const STYLES={
 // Light colours on wall cabinets and tall units (openness), heavier tones on base cabinets (anchor),
 // the boldest colour saved for the island (focal point). Ordered lightest first.
 const PALETTES={
+  // Single colour, lightest first
   'white':{name:'White', lower:'white', upper:'white', tall:'white', island:'white'},
   'greige':{name:'Greige', lower:'greige', upper:'greige', tall:'greige', island:'greige'},
-  'green-white':{name:'Green & white', lower:'green', upper:'white', tall:'white', island:'green'},
-  'brown-white':{name:'Brown & white', lower:'walnut', upper:'white', tall:'white', island:'walnut'},
   'dusty-blue':{name:'Dusty blue', lower:'dustyblue', upper:'dustyblue', tall:'dustyblue', island:'dustyblue'},
-  'brown-green':{name:'Brown & green', lower:'walnut', upper:'oak', tall:'white', island:'green'},
-  // multi-colour boards: the extra colours go on the walls, a feature wall and the ceiling
-  'teal':{name:'Teal', lower:'tanwood', upper:'cream', tall:'cream', island:'teal',
-          wall:'#ebe6dd', ceiling:'#f3efe8', feature:{wall:'south', color:'#c8b49e', name:'sand'}, wallName:'warm cream'},
   'green':{name:'Green', lower:'green', upper:'green', tall:'green', island:'green'},
   'brown':{name:'Brown', lower:'walnut', upper:'walnut', tall:'walnut', island:'walnut'},
+  'slate-teal':{name:'Slate teal', lower:'slateteal', upper:'slateteal', tall:'slateteal', island:'slateteal'},
+  'navy':{name:'Navy', lower:'navy', upper:'navy', tall:'navy', island:'navy'},
+  // Two colours, lightest first
+  'green-white':{name:'Green & white', lower:'green', upper:'white', tall:'white', island:'green'},
+  'brown-white':{name:'Brown & white', lower:'walnut', upper:'white', tall:'white', island:'walnut'},
+  // Three or more colours, lightest first
+  'brown-green':{name:'Brown & green', lower:'walnut', upper:'oak', tall:'white', island:'green'},
+  'teal':{name:'Teal', lower:'tanwood', upper:'cream', tall:'cream', island:'teal',
+          wall:'#ebe6dd', ceiling:'#f3efe8', feature:{wall:'south', color:'#c8b49e', name:'sand'}, wallName:'warm cream'},
   'mocha':{name:'Mocha', lower:'mocha', upper:'caramel', tall:'caramel', island:'espresso',
           wall:'#f2ddcb', ceiling:'#f8efe6', feature:{wall:'south', color:'#625f5d', name:'warm grey'}, wallName:'soft peach'},
-  'slate-teal':{name:'Slate teal', lower:'slateteal', upper:'slateteal', tall:'slateteal', island:'slateteal'},
   'espresso':{name:'Espresso', lower:'darkbrown', upper:'tanbrown', tall:'taupe', island:'rustwood',
-          wall:'#e6ded4', ceiling:'#efe9e2', feature:{wall:'south', color:'#33302b', name:'charcoal'}, wallName:'light greige'},
-  'navy':{name:'Navy', lower:'navy', upper:'navy', tall:'navy', island:'navy'}
+          wall:'#e6ded4', ceiling:'#efe9e2', feature:{wall:'south', color:'#33302b', name:'charcoal'}, wallName:'light greige'}
 };
 const FIN={
   green:{modern:'#8b9a7f', med:'#7b8a5f', farm:'#86998a'},
@@ -1104,7 +1106,8 @@ function updateUI(){
   document.getElementById('ks-island').textContent=on?'1550 × 890, walkways 1000 north and south, 1200 east and west':'1550 × 890, 1200 walkways';
   document.querySelectorAll('[data-palette]').forEach(b=>{
     b.setAttribute('aria-checked',String(b.dataset.palette===state.palette));
-    const [a,c]=SWATCH[b.dataset.palette]; b.querySelector('.dot').style.background=`linear-gradient(135deg,${swColor(a)} 0 50%,${swColor(c)} 50% 100%)`;
+    const P=PALETTES[b.dataset.palette], cols=[...new Set([P.upper,P.tall,P.lower,P.island].map(swColor).concat(P.feature?[P.feature.color]:[]))];
+    const step=100/cols.length; b.querySelector('.dot').style.background=cols.length===1?cols[0]:`conic-gradient(${cols.map((c,i)=>`${c} ${i*step}% ${(i+1)*step}%`).join(',')})`;
   });
 }
 function specRows(){
