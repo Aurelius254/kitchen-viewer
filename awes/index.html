@@ -175,23 +175,18 @@ const STYLES={
   farm:{name:'Farmhouse', door:'shaker', pull:'cup', topT:.04, upperTop:2.4, crown:true, ceiling:'flat', floor:'oak', splash:'subway',
           wall:'#ece8de', hood:'canopy', sink:'apron', pend:'dome', stool:'cross', rug:'floral', frame:'#f1efe9', drawerOverDoor:true}
 };
+// Light colours on wall cabinets and tall units (openness), heavier tones on base cabinets (anchor),
+// the boldest colour saved for the island (focal point). Ordered lightest first.
 const PALETTES={
+  'white':{name:'White', lower:'white', upper:'white', tall:'white', island:'white'},
+  'greige':{name:'Greige', lower:'greige', upper:'greige', tall:'greige', island:'greige'},
+  'green-white':{name:'Green & white', lower:'green', upper:'white', tall:'white', island:'green'},
+  'brown-white':{name:'Brown & white', lower:'walnut', upper:'white', tall:'white', island:'walnut'},
+  'dusty-blue':{name:'Dusty blue', lower:'dustyblue', upper:'dustyblue', tall:'dustyblue', island:'dustyblue'},
+  'brown-green':{name:'Brown & green', lower:'walnut', upper:'oak', tall:'white', island:'green'},
   'green':{name:'Green', lower:'green', upper:'green', tall:'green', island:'green'},
   'brown':{name:'Brown', lower:'walnut', upper:'walnut', tall:'walnut', island:'walnut'},
-  'white':{name:'White', lower:'white', upper:'white', tall:'white', island:'white'},
-  'brown-white':{name:'Brown & white', lower:'walnut', upper:'white', tall:'white', island:'walnut'},
-  'green-white':{name:'Green & white', lower:'green', upper:'white', tall:'white', island:'green'},
-  'brown-green':{name:'Brown & green', lower:'walnut', upper:'green', tall:'green', island:'walnut'},
-  // from the client's palette boards (no Blender renders)
-  'rust-teal':{name:'Rust & teal', lower:'rustwood', upper:'petrol', tall:'petrol', island:'rustwood'},
-  'espresso':{name:'Espresso', lower:'espresso', upper:'charcoal', tall:'charcoal', island:'espresso'},
-  'deep-teal':{name:'Deep teal', lower:'teal', upper:'cream', tall:'cream', island:'teal'},
-  'mocha':{name:'Mocha', lower:'mocha', upper:'peach', tall:'peach', island:'mocha'},
-  'forest':{name:'Forest green', lower:'forest', upper:'apricot', tall:'apricot', island:'forest'},
-  // single-colour cabinet boards (no Blender renders)
   'slate-teal':{name:'Slate teal', lower:'slateteal', upper:'slateteal', tall:'slateteal', island:'slateteal'},
-  'dusty-blue':{name:'Dusty blue', lower:'dustyblue', upper:'dustyblue', tall:'dustyblue', island:'dustyblue'},
-  'greige':{name:'Greige', lower:'greige', upper:'greige', tall:'greige', island:'greige'},
   'navy':{name:'Navy', lower:'navy', upper:'navy', tall:'navy', island:'navy'}
 };
 const FIN={
@@ -217,7 +212,7 @@ const FIN_NAME={
   caramel:'caramel wood', forest:'forest green', sage:'sage', deepteal:'deep teal', apricot:'apricot',
   slateteal:'slate teal', dustyblue:'dusty blue', greige:'greige', navy:'navy blue'
 };
-const state={style:'modern', palette:'green-white', island:'stools', pt:'off'};
+const state={style:'modern', palette:'white', island:'stools', pt:'off'};
 try{const s=JSON.parse(localStorage.getItem('kitchen-studio')||'{}'); if(STYLES[s.style])state.style=s.style; if(PALETTES[s.palette])state.palette=s.palette; if(s.island==='plain'||s.island==='stools')state.island=s.island; if(s.pt==='on'||s.pt==='off')state.pt=s.pt;}catch(e){}
 let STY=STYLES[state.style], PAL=PALETTES[state.palette];
 
@@ -404,7 +399,7 @@ function finMat(kind){
   return FINC[kind]=m;
 }
 function topKind(){if(state.style==='med')return 'travertine'; if(state.style==='farm')return 'marble'; return (PAL.lower==='walnut'&&PAL.upper==='walnut')?'charcoal':'quartz';}
-function hwKind(){if(state.style==='med')return 'iron'; if(state.style==='farm')return 'brass'; return (PAL.lower==='walnut'||PAL.upper==='oak'||PAL.tall==='walnut'||['rust-teal','espresso','deep-teal','mocha','forest','slate-teal','dusty-blue','greige','navy'].includes(state.palette))?'brass':'black';}
+function hwKind(){if(state.style==='med')return 'iron'; if(state.style==='farm')return 'brass'; return (PAL.lower==='walnut'||PAL.upper==='oak'||PAL.tall==='walnut'||['slate-teal','dusty-blue','greige','navy'].includes(state.palette))?'brass':'black';}
 let M={};
 function makeMats(){
   for(const k in FINC)delete FINC[k];
@@ -754,11 +749,11 @@ function buildKitchen(){
   B(gw,-.18,1.12,CD+.026,.012,.27,.012,M.chrome);
   front(gw,-.6,1.48,.6,tallTop-1.48,CD,tf); pull(gw,-.6+.045,1.48+.18,CD+FT,'v',.3);
   // fridge housing
-  B(gw,-1.5,0,0,.02,tallTop,CD+FT,tf); B(gw,-1.5,1.92,0,.9,tallTop-1.92,CD-.002,tf);
-  front(gw,-1.5,1.92,.9,tallTop-1.92,CD,tf);
+  B(gw,-1.497,0,0,.02,tallTop,CD+FT,tf); B(gw,-1.497,1.92,0,.897,tallTop-1.92,CD-.002,tf);   // 3 mm clear of the south wall
+  front(gw,-1.497,1.92,.897,tallTop-1.92,CD,tf);
   if(STY.pull==='bar')pull(gw,-1.05,1.92+.06,CD+FT,'h',.3); else pull(gw,-1.05,1.92+.07,CD+FT,'h',.2);
   fridge(gw,-1.47);
-  if(STY.crown)B(gw,-1.52,tallTop,0,1.54,.05,CD+.05,tf);
+  if(STY.crown)B(gw,-1.497,tallTop,0,1.517,.05,CD+.05,tf);
 
   // ---- north wall: corner L continues, sink under the window (x .62-2.70), fronts face +z
   const gn=runGroup(K,0,0,0);
@@ -1074,8 +1069,8 @@ document.querySelectorAll('.views button').forEach(b=>b.addEventListener('click'
 camera.position.copy(VIEWS.overview.p); controls.target.copy(VIEWS.overview.t);
 
 /* ---------------------------------------------------------------- UI */
-const SWATCH={green:['green','green'],brown:['walnut','walnut'],white:['white','white'],'brown-white':['walnut','white'],'green-white':['green','white'],'brown-green':['walnut','green'],
-  'rust-teal':['rustwood','petrol'],espresso:['espresso','charcoal'],'deep-teal':['teal','cream'],mocha:['mocha','peach'],forest:['forest','apricot'],
+const SWATCH={green:['green','green'],brown:['walnut','walnut'],white:['white','white'],'brown-white':['walnut','white'],'green-white':['green','white'],'brown-green':['oak','green'],
+ 
   'slate-teal':['slateteal','slateteal'],'dusty-blue':['dustyblue','dustyblue'],greige:['greige','greige'],navy:['navy','navy']};
 function swColor(k){const v=FV(k,state.style); return typeof v==='string'?v:v[0];}
 const swWrap=document.getElementById('swatches');
