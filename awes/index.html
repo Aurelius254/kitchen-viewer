@@ -786,14 +786,13 @@ function buildKitchen(){
     if(STY.pull==='bar')pull(gw,-1.05,1.92+.06,CD+FT,'h',.3); else pull(gw,-1.05,1.92+.07,CD+FT,'h',.2);
     fridge(gw,-1.47);
   } else {
-    // 3 walls: a tall larder takes the fridge's place, so the tall run reaches the south wall
-    B(gw,-1.497,PL,0,.897,tallTop-PL,CD-.002,tf); B(gw,-1.49,0,0,.88,PL,CD-.06,M.plinth||tf);
-    const lh=tallTop-PL;
-    for(const [x0,hl] of [[-1.497,'r'],[-1.0485,'l']]){
-      front(gw,x0,PL,.4485,1.18,CD,tf); front(gw,x0,PL+1.18,.4485,lh-1.18,CD,tf);
-      const hxp=hl==='l'?x0+.045:x0+.4485-.045;
-      pull(gw,hxp,STY.pull==='bar'?PL+1.18-.2:PL+1.18-.08,CD+FT,'v',.3); pull(gw,hxp,PL+1.18+.18,CD+FT,'v',.3);
-    }
+    // 3 walls: tall run continues to the south wall. A 300 pull-out larder sits next to the pantry;
+    // the 600 corner behind the fridge housing is a closed, blind corner (no door that can't open).
+    B(gw,-.9,PL,0,.3,tallTop-PL,CD-.002,tf); B(gw,-.895,0,0,.29,PL,CD-.06,M.plinth||tf);
+    front(gw,-.9,PL,.3,tallTop-PL,CD,tf);
+    pull(gw,-.75,STY.pull==='bar'?PL+1.15:PL+1.1,CD+FT,'h',.2);
+    B(gw,-1.497,0,0,.597,tallTop,CD+FT,tf);                         // blind corner: closed carcass with a flush end panel
+    B(gw,-.902,0,CD-.002,.02,tallTop,FT+.004,tf);
     southFridge(K,tallTop,tf);
   }
   if(STY.crown)B(gw,-1.497,tallTop,0,1.517,.05,CD+.05,tf);
