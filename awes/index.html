@@ -63,6 +63,7 @@ aside h2{margin:0 0 8px;font-size:11px;font-weight:600;letter-spacing:.09em;text
 .dot{width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 1px rgb(0 0 0 / .12)}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:3px;border:1px solid var(--line);border-radius:9px}
 .seg button{font:500 13px var(--sans);color:var(--fg);background:transparent;border:0;border-radius:7px;padding:8px;cursor:pointer}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
 .seg button[aria-checked="true"]{background:var(--accent);color:var(--accent-fg)}
 .pdf{display:flex;align-items:center;justify-content:center;gap:8px;font:600 14px var(--sans);color:var(--accent-fg);background:var(--accent);border:0;border-radius:10px;padding:12px;cursor:pointer}
 .pdf:hover{filter:brightness(1.07)}
@@ -110,6 +111,14 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
           <button class="opt" role="radio" id="s-med" data-style="med" aria-checked="false"><b>Mediterranean</b><small>Panel doors, iron knobs, plaster hood, terracotta, beams</small></button>
           <button class="opt" role="radio" id="s-farm" data-style="farm" aria-checked="false"><b>Farmhouse</b><small>Shaker doors, brass cup pulls, apron sink, subway tile</small></button>
         </div>
+      </div>
+      <div>
+        <h2>Layout</h2>
+        <div class="seg" role="radiogroup" aria-label="Layout">
+          <button role="radio" id="l-corner" data-layout="corner" aria-checked="true">Open corner</button>
+          <button role="radio" id="l-3wall" data-layout="3wall" aria-checked="false">3 walls</button>
+        </div>
+        <p class="note" id="layout-note"></p>
       </div>
       <div>
         <h2>Colour</h2>
@@ -223,8 +232,11 @@ const FIN_NAME={
   darkbrown:'dark espresso wood', tanbrown:'tan wood',
   slateteal:'slate teal', dustyblue:'dusty blue', greige:'greige', navy:'navy blue'
 };
-const state={style:'modern', palette:'white', island:'stools', pt:'off'};
-try{const s=JSON.parse(localStorage.getItem('kitchen-studio')||'{}'); if(STYLES[s.style])state.style=s.style; if(PALETTES[s.palette])state.palette=s.palette; if(s.island==='plain'||s.island==='stools')state.island=s.island; if(s.pt==='on'||s.pt==='off')state.pt=s.pt;}catch(e){}
+const state={style:'modern', palette:'white', island:'stools', pt:'off', layout:'corner'};
+const TW=()=>state.layout==='3wall';              // 3 walls: fridge on the south wall, tall units to the south corner
+const ptOn=()=>state.pt==='on'||TW();             // the 3 walls layout always has the pass-through cabinet
+const dkey=()=>`${state.style}-${state.palette}-${state.island}${TW()?'-3w':state.pt==='on'?'-pt':''}`;
+try{const s=JSON.parse(localStorage.getItem('kitchen-studio')||'{}'); if(STYLES[s.style])state.style=s.style; if(PALETTES[s.palette])state.palette=s.palette; if(s.island==='plain'||s.island==='stools')state.island=s.island; if(s.pt==='on'||s.pt==='off')state.pt=s.pt; if(s.layout==='corner'||s.layout==='3wall')state.layout=s.layout;}catch(e){}
 let STY=STYLES[state.style], PAL=PALETTES[state.palette];
 
 /* ---------------------------------------------------------------- renderer */
@@ -718,7 +730,7 @@ function buildRoom(){
 /* ---------------------------------------------------------------- cabinetry */
 function buildKitchen(){
   const K=new THREE.Group(); ROOT.add(K);
-  const topY=WT-STY.topT, upTop=STY.upperTop, up0=1.45;
+  const topY=WT-STY.topT, upTop=STY.upperTop, HO=TW()?.15:0, up0=1.45+HO;   // 3 walls: 150 more clearance on the cooking wall
 
   // ---- west wall: base run (local x 0 at z=3.07 → 3.07 at the north corner), fronts face +x
   const gw=runGroup(K,0,LW,Math.PI/2);
@@ -739,10 +751,10 @@ function buildKitchen(){
   else if(state.style==='med'){C(gw,.11,.12,hx+.13,WT+.09,.42,M.copper,null,32); C(gw,.115,.01,hx+.13,WT+.155,.42,M.copper,null,32); tube(gw,[[hx+.24,WT+.13,.42],[hx+.32,WT+.135,.42],[hx+.38,WT+.14,.42]],.008,M.copper,8);}
   else {C(gw,.1,.1,hx+.13,WT+.075,.42,M.steel,null,32); C(gw,.105,.01,hx+.13,WT+.13,.42,M.blackGlass,null,32); C(gw,.012,.02,hx+.13,WT+.145,.42,M.black);}
   // hood & uppers
-  hood(gw,hx);
+  hood(gw,hx,HO);
   const st=state.style;
   const westUppers=st==='modern'
-    ? [{w:.76,t:'niche',nh:.42},{w:.6,t:'doors'},{w:.6,t:'doors',y0:2.05,hood:true},{w:.84,t:'doors',n:2}]
+    ? [{w:.76,t:'niche',nh:.42},{w:.6,t:'doors'},{w:.6,t:'doors',y0:2.05+HO,hood:true},{w:.84,t:'doors',n:2}]
     : st==='med'
     ? [{w:.76,t:'doors',n:2},{w:.6,t:'shelves',n:2},{w:.6,t:'gap'},{w:.84,t:'shelves',n:2}]
     : [{w:.76,t:'shelves',n:3},{w:.6,t:'glass',n:1,h:'r'},{w:.6,t:'gap'},{w:.84,t:'glass',n:2}];
@@ -767,11 +779,23 @@ function buildKitchen(){
   for(let r=0;r<3;r++)for(let c=0;c<3;c++)B(gw,-.138+c*.035,1.17+r*.05,CD+.026,.025,.03,.002,M.steelDark);
   B(gw,-.18,1.12,CD+.026,.012,.27,.012,M.chrome);
   front(gw,-.6,1.48,.6,tallTop-1.48,CD,tf); pull(gw,-.6+.045,1.48+.18,CD+FT,'v',.3);
-  // fridge housing
-  B(gw,-1.497,0,0,.02,tallTop,CD+FT,tf); B(gw,-1.497,1.92,0,.897,tallTop-1.92,CD-.002,tf);   // 3 mm clear of the south wall
-  front(gw,-1.497,1.92,.897,tallTop-1.92,CD,tf);
-  if(STY.pull==='bar')pull(gw,-1.05,1.92+.06,CD+FT,'h',.3); else pull(gw,-1.05,1.92+.07,CD+FT,'h',.2);
-  fridge(gw,-1.47);
+  if(!TW()){
+    // fridge housing
+    B(gw,-1.497,0,0,.02,tallTop,CD+FT,tf); B(gw,-1.497,1.92,0,.897,tallTop-1.92,CD-.002,tf);   // 3 mm clear of the south wall
+    front(gw,-1.497,1.92,.897,tallTop-1.92,CD,tf);
+    if(STY.pull==='bar')pull(gw,-1.05,1.92+.06,CD+FT,'h',.3); else pull(gw,-1.05,1.92+.07,CD+FT,'h',.2);
+    fridge(gw,-1.47);
+  } else {
+    // 3 walls: a tall larder takes the fridge's place, so the tall run reaches the south wall
+    B(gw,-1.497,PL,0,.897,tallTop-PL,CD-.002,tf); B(gw,-1.49,0,0,.88,PL,CD-.06,M.plinth||tf);
+    const lh=tallTop-PL;
+    for(const [x0,hl] of [[-1.497,'r'],[-1.0485,'l']]){
+      front(gw,x0,PL,.4485,1.18,CD,tf); front(gw,x0,PL+1.18,.4485,lh-1.18,CD,tf);
+      const hxp=hl==='l'?x0+.045:x0+.4485-.045;
+      pull(gw,hxp,STY.pull==='bar'?PL+1.18-.2:PL+1.18-.08,CD+FT,'v',.3); pull(gw,hxp,PL+1.18+.18,CD+FT,'v',.3);
+    }
+    southFridge(K,tallTop,tf);
+  }
   if(STY.crown)B(gw,-1.497,tallTop,0,1.517,.05,CD+.05,tf);
 
   // ---- north wall: corner L continues, sink under the window (x .62-2.70), fronts face +z
@@ -818,22 +842,22 @@ function taper(p,cx,y0,y1,bw,bd,tw,td,mat){
   const m=new THREE.Mesh(g,mat); m.castShadow=true; m.receiveShadow=true; p.add(m); return m;
 }
 // range hood: fits the 600 gap between the wall units on the cooking wall
-function hood(p,hx){
+function hood(p,hx,o=0){
   const k=STY.hood;
   if(k==='glass'){
     // angled hood: closed body against the wall, sloping black-glass front, steel underside with lights
-    taper(p,hx,1.62,2.05,.598,.5,.598,.3,M.blackGlass);
-    B(p,hx-.29,1.6,.02,.58,.02,.46,M.steelDark);
-    for(const dx of [-.15,.15])C(p,.022,.003,hx+dx,1.598,.3,M.bulb).castShadow=false;
+    taper(p,hx,1.62+o,2.05+o,.598,.5,.598,.3,M.blackGlass);
+    B(p,hx-.29,1.6+o,.02,.58,.02,.46,M.steelDark);
+    for(const dx of [-.15,.15])C(p,.022,.003,hx+dx,1.598+o,.3,M.bulb).castShadow=false;
     return;
   }
   const mat=k==='plaster'?std({map:wallTex(),color:'#fbf6ee',roughness:.95}):finMat('white');
-  const yb=1.72, yt=2.3, cw=.3, cd=.26;
+  const yb=1.72+o, yt=2.3+o, cw=.3, cd=.26;
   taper(p,hx,yb,yt,.598,.5,cw,cd,mat);                         // canopy: meets the chimney exactly at the top
   B(p,hx-cw/2,yt,0,cw,H-yt-(STY.ceiling==='beams'?0:.002),cd,mat); // chimney to the ceiling, same footprint
-  B(p,hx-.3,1.62,0,.6,.1,.52,k==='plaster'?M.darkWood:M.shelfWood); // mantel ledge
-  B(p,hx-.27,1.6,.04,.54,.02,.44,M.steelDark);
-  for(const dx of [-.15,.15])C(p,.022,.003,hx+dx,1.598,.28,M.bulb).castShadow=false;
+  B(p,hx-.3,1.62+o,0,.6,.1,.52,k==='plaster'?M.darkWood:M.shelfWood); // mantel ledge
+  B(p,hx-.27,1.6+o,.04,.54,.02,.44,M.steelDark);
+  for(const dx of [-.15,.15])C(p,.022,.003,hx+dx,1.598+o,.28,M.bulb).castShadow=false;
 }
 function fridge(p,x0){
   const w=.84, h=1.86, d=.68, fz=d-.05;
@@ -947,7 +971,7 @@ function espressoMajolica(p,cx,y,zb){
 }
 function island(K){
   const stools=state.island==='stools', fin=PAL.island, fm=finMat(fin);
-  const z0=state.pt==='on'?1.61:1.81, dz=z0-1.81, L=1.55, xw=1.81, xe=2.70, topY=WT-STY.topT;
+  const z0=ptOn()?1.61:1.81, dz=z0-1.81, L=1.55, xw=1.81, xe=2.70, topY=WT-STY.topT;
   // west face: back of the carcass at x .. depending on stools
   if(stools){
     const g=runGroup(K,2.41,z0,-Math.PI/2);
@@ -981,12 +1005,21 @@ function island(K){
     plane(K,1.9,2.5,std({color:new THREE.Color(PAL.feat.color).multiplyScalar(.82),roughness:.95,envMapIntensity:.2}),rx,.004,rz,-Math.PI/2);
     plane(K,1.82,2.42,M.feat,rx,.005,rz,-Math.PI/2);
   } else if(STY.rug){const r=STY.rug==='jute'?rugTex('jute'):rugTex('floral'); const m=plane(K,.8,2.4,std({map:r,roughness:.95,envMapIntensity:.2}),1.21,.004,1.95+dz,-Math.PI/2); m.receiveShadow=true;}
-  if(state.pt==='on')passCabinet(K);
+  if(ptOn())passCabinet(K);
 }
 // base cabinet under the south pass-through: from the east wall west to 1200 clear of the fridge front (clear of the 700 east door)
+// 3 walls: fridge in a full-height housing on the south wall (x .60-1.50), fronts facing north
+function southFridge(K,tallTop,tf){
+  const g=runGroup(K,1.5,D-.003,Math.PI);
+  B(g,0,0,0,.02,tallTop,CD+FT,tf); B(g,.88,0,0,.02,tallTop,CD+FT,tf);
+  B(g,.02,1.92,0,.86,tallTop-1.92,CD-.002,tf); front(g,.02,1.92,.86,tallTop-1.92,CD,tf);
+  if(STY.pull==='bar')pull(g,.45,1.92+.06,CD+FT,'h',.3); else pull(g,.45,1.92+.07,CD+FT,'h',.2);
+  fridge(g,.03);
+  if(STY.crown)B(g,-.01,tallTop,0,.92,.05,CD+.05,tf);
+}
 function passCabinet(K){
-  const g=runGroup(K,W,D,Math.PI), cd=.42-FT, topY=WT-STY.topT, len=2.02;
-  baseRun(g,0,[{w:.5,t:'drawers'},{w:1.0,t:'doors',n:2},{w:.52,t:'drawers'}],PAL.lower,{cd});
+  const g=runGroup(K,W,D,Math.PI), cd=.42-FT, topY=WT-STY.topT, len=TW()?2.4:2.02;
+  baseRun(g,0,TW()?[{w:.5,t:'drawers'},{w:1.0,t:'doors',n:2},{w:.45,t:'drawers'},{w:.45,t:'doors',n:1,h:'l'}]:[{w:.5,t:'drawers'},{w:1.0,t:'doors',n:2},{w:.52,t:'drawers'}],PAL.lower,{cd});
   B(g,-.005,topY,0,len+.01,STY.topT,.44,M.top);
   B(g,0,WT,0,len,1.04-WT,.012,M.splash,false);
   // a little life on the counter: fruit bowl and a plant at the hatch
@@ -1058,7 +1091,7 @@ function rebuild(){
   if(ROOT){scene.remove(ROOT); dispose(ROOT);}
   MATS.forEach(m=>m.dispose()); MATS=[]; LIGHTS.length=0; OUTSIDE=[];
   STY=STYLES[state.style]; PAL=PALETTES[state.palette];
-  seed=hash(state.style+state.palette+state.island);  // pass-through option deliberately left out so decor stays put
+  seed=hash(state.style+state.palette+state.island);  // layout and pass-through options left out so decor stays put  // pass-through option deliberately left out so decor stays put
   makeMats();
   ROOT=new THREE.Group(); scene.add(ROOT);
   buildRoom(); buildKitchen(); buildLights();
@@ -1106,12 +1139,15 @@ for(const key of Object.keys(PALETTES)){
 document.querySelectorAll('[data-style]').forEach(b=>b.addEventListener('click',()=>{state.style=b.dataset.style; rebuild();}));
 document.querySelectorAll('[data-island]').forEach(b=>b.addEventListener('click',()=>{state.island=b.dataset.island; rebuild();}));
 document.querySelectorAll('[data-pt]').forEach(b=>b.addEventListener('click',()=>{state.pt=b.dataset.pt; rebuild();}));
+document.querySelectorAll('[data-layout]').forEach(b=>b.addEventListener('click',()=>{state.layout=b.dataset.layout; rebuild();}));
 function updateUI(){
   document.querySelectorAll('[data-style]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.style===state.style)));
   document.querySelectorAll('[data-island]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.island===state.island)));
-  document.querySelectorAll('[data-pt]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.pt===state.pt)));
-  const on=state.pt==='on';
-  document.getElementById('pt-note').textContent=on?'2020 long, 420 deep, under the hatch to the east wall. The island moves 200 north to keep 1000 walkways.':'Walkways stay at 1200 all round the island.';
+  document.querySelectorAll('[data-pt]').forEach(b=>{b.setAttribute('aria-checked',String(TW()?b.dataset.pt==='on':b.dataset.pt===state.pt)); b.disabled=TW();});
+  document.querySelectorAll('[data-layout]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.layout===state.layout)));
+  document.getElementById('layout-note').textContent=TW()?'Fridge on the south wall beside the pass-through cabinet; tall units run to the south corner; 700 clear above the cooking counter.':'Fridge and pantry at the south end of the west wall; corner left open.';
+  const on=ptOn();
+  document.getElementById('pt-note').textContent=TW()?'Always included in 3 walls: 2400 long, 420 deep, from the east wall to the fridge. Island moves 200 north (1000 walkways).':on?'2020 long, 420 deep, under the hatch to the east wall. The island moves 200 north to keep 1000 walkways.':'Walkways stay at 1200 all round the island.';
   document.getElementById('ks-island').textContent=on?'1550 × 890, walkways 1000 north and south, 1200 east and west':'1550 × 890, 1200 walkways';
   document.querySelectorAll('[data-palette]').forEach(b=>{
     b.setAttribute('aria-checked',String(b.dataset.palette===state.palette));
@@ -1135,7 +1171,8 @@ function specRows(){
     ['Hood',{glass:'Black angled glass',plaster:'Plaster canopy with wood beam',canopy:'Painted canopy with oak mantel'}[STY.hood]],
     ['Lighting',{tray:'Lit ceiling tray, downlights, linear pendant',beams:'Wood beams, rattan pendants',flat:'Downlights, dome pendants'}[STY.ceiling]],
     ['Island',state.island==='stools'?'Storage one side, 3 stools on the other':'Storage on both sides'],
-    ['Pass-through',state.pt==='on'?'420-deep cabinet below the hatch, 2020 long':'Open wall below the hatch']
+    ['Layout',TW()?'3 walls: fridge on the south wall, tall units to the corner':'Open corner'],
+    ['Pass-through',TW()?'420-deep cabinet below the hatch, 2400 long, fridge beside it':state.pt==='on'?'420-deep cabinet below the hatch, 2020 long':'Open wall below the hatch']
   ];
 }
 const cap=s=>s[0].toUpperCase()+s.slice(1);
@@ -1163,7 +1200,7 @@ async function loadRender(key,view){
     return await new Promise(res=>{const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(null); fr.readAsDataURL(b);});}catch(e){return null;}
 }
 function updatePdfNote(){
-  const k=`${state.style}-${state.palette}-${state.island}${state.pt==='on'?'-pt':''}`, n=document.getElementById('pdf-note');
+  const k=dkey(), n=document.getElementById('pdf-note');
   n.textContent=RENDERED.has(k)?'Studio-rendered PDF: five pages of photo-quality Blender images, with plan and finishes.':'Five pages of pictures from this 3D view: overview, both walls, island and plan, with finishes.';
   document.getElementById('pdf').dataset.studio=RENDERED.has(k)?'1':'';
 }
@@ -1175,7 +1212,7 @@ pdfBtn.addEventListener('click',async()=>{
   try{
     const {jsPDF}=window.jspdf, doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
     const PW=297, PH=210, band=26, ink=[31,29,26], muted=[107,102,93], acc=[63,90,60];
-    const title=`${STY.name} · ${PAL.name} · ${state.island==='stools'?'island with stools':'island without stools'}${state.pt==='on'?' · pass-through cabinet':''}`;
+    const title=`${STY.name} · ${PAL.name} · ${state.island==='stools'?'island with stools':'island without stools'}${TW()?' · 3 walls':state.pt==='on'?' · pass-through cabinet':''}`;
     const date=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
     const pageBand=(h1,line,n)=>{doc.setFillColor(255,255,255); doc.rect(0,PH-band,PW,band,'F'); doc.setFillColor(...acc); doc.rect(0,PH-band,PW,.8,'F');
       doc.setTextColor(...ink); doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.text(h1,14,PH-band+11);
@@ -1184,7 +1221,7 @@ pdfBtn.addEventListener('click',async()=>{
     const imgW=2600, imgH=Math.round(2600*(PH-band)/PW);
     const pages=[['overview','Kitchen design',`${title}  ·  ${date}`],['sink','Sink wall','Sink under the window, corner run turning into the cooking wall.'],
       ['cook','Cooking wall','Gas hob and oven, coffee station, pantry with built-in microwave, fridge.'],['island','Island',state.island==='stools'?'1550 × 890 mm island with storage on the work side and three stools.':'1550 × 890 mm island with storage on both sides.']];
-    const key=`${state.style}-${state.palette}-${state.island}${state.pt==='on'?'-pt':''}`, rendered=RENDERED.has(key);
+    const key=dkey(), rendered=RENDERED.has(key);
     const img=async(v,w,h)=>{ if(rendered){const u=await loadRender(key,v); if(u)return u;} return shot(v,w,h); };
     for(let i=0;i<pages.length;i++){const [v,h1,line]=pages[i]; if(i)doc.addPage(); busy.querySelector('span').textContent=`${rendered?'Adding':'Rendering'} page ${i+1} of 5…`;
       doc.addImage(await img(v,imgW,imgH),'JPEG',0,0,PW,PH-band); pageBand(h1,line,i+1);}
@@ -1196,11 +1233,11 @@ pdfBtn.addEventListener('click',async()=>{
     const sw=[['Base & island',swColor(PAL.lower)],['Wall cabinets',swColor(PAL.upper)],['Worktop',{quartz:'#edeae4',charcoal:'#2b2b2c',travertine:'#d9c4a2',marble:'#f0eee9'}[topKind()]],['Hardware',{brass:'#c39a55',black:'#171717',iron:'#2a2724'}[hwKind()]],['Floor',{porcelain:'#d6d2ca',terracotta:'#b8653f',oak:'#b28a5e'}[STY.floor]]];
     for(const [n,c] of sw){const v=parseInt(c.slice(1),16); doc.setFillColor(v>>16&255,v>>8&255,v&255); doc.setDrawColor(200,196,188); doc.roundedRect(x,y-4,9,9,1.5,1.5,'FD'); doc.setTextColor(...ink); doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.text(n,x+13,y+2); y+=12;}
     y+=2; doc.setTextColor(...acc); doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.text('KEY SIZES (MM)',x,y); y+=6;
-    for(const [a,b] of [['Room','3900 × 4570, 2920 high'],['Worktops','900 high, 610 deep'],['Island','1550 × 890'],['Walkways',state.pt==='on'?'1000 N/S, 1200 E/W':'1200 all round'],['Window','1770 wide, sill 1070'],['Pass-through','970 × 1550, sill 1070']]){
+    for(const [a,b] of [['Room','3900 × 4570, 2920 high'],['Worktops','900 high, 610 deep'],['Island','1550 × 890'],['Walkways',ptOn()?'1000 N/S, 1200 E/W':'1200 all round'],['Window','1770 wide, sill 1070'],['Pass-through','970 × 1550, sill 1070']]){
       doc.setTextColor(...muted); doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.text(a,x,y); doc.setTextColor(...ink); doc.text(b,x+30,y); y+=5.6;}
     doc.setFillColor(...acc); doc.rect(0,PH-band,PW,.8,'F'); doc.setTextColor(...ink); doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.text('Plan and finishes',14,PH-band+11);
     doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(...muted); doc.text(title,14,PH-band+18); doc.setFontSize(8.5); doc.text('Kitchen design  ·  5 / 5',PW-14,PH-band+18,{align:'right'});
-    doc.save(`kitchen-${state.style}-${state.palette}-${state.island}${state.pt==='on'?'-passthrough':''}.pdf`);
+    doc.save(`kitchen-${state.style}-${state.palette}-${state.island}${TW()?'-3walls':state.pt==='on'?'-passthrough':''}.pdf`);
     document.getElementById('pdf-note').textContent='PDF ready. It downloads with the design name in the file name.';
   }catch(err){document.getElementById('pdf-note').textContent='The PDF could not be made: '+err.message;}
   finally{busy.hidden=true; pdfBtn.disabled=false;}
