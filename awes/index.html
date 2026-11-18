@@ -786,13 +786,15 @@ function buildKitchen(){
     if(STY.pull==='bar')pull(gw,-1.05,1.92+.06,CD+FT,'h',.3); else pull(gw,-1.05,1.92+.07,CD+FT,'h',.2);
     fridge(gw,-1.47);
   } else {
-    // 3 walls: tall run continues to the south wall. A 300 pull-out larder sits next to the pantry;
-    // the 600 corner behind the fridge housing is a closed, blind corner (no door that can't open).
-    B(gw,-.9,PL,0,.3,tallTop-PL,CD-.002,tf); B(gw,-.895,0,0,.29,PL,CD-.06,M.plinth||tf);
-    front(gw,-.9,PL,.3,tallTop-PL,CD,tf);
-    pull(gw,-.75,STY.pull==='bar'?PL+1.15:PL+1.1,CD+FT,'h',.2);
-    B(gw,-1.497,0,0,.597,tallTop,CD+FT,tf);                         // blind corner: closed carcass with a flush end panel
-    B(gw,-.902,0,CD-.002,.02,tallTop,FT+.004,tf);
+    // 3 walls: a two-door tall larder takes the fridge's place, so the tall run reaches the south wall.
+    // The fridge sits 600 east of it, so the corner door opens freely.
+    B(gw,-1.497,PL,0,.897,tallTop-PL,CD-.002,tf); B(gw,-1.49,0,0,.88,PL,CD-.06,M.plinth||tf);
+    const lh=tallTop-PL;
+    for(const [x0,hl] of [[-1.497,'r'],[-1.0485,'l']]){
+      front(gw,x0,PL,.4485,1.18,CD,tf); front(gw,x0,PL+1.18,.4485,lh-1.18,CD,tf);
+      const hxp=hl==='l'?x0+.045:x0+.4485-.045;
+      pull(gw,hxp,STY.pull==='bar'?PL+1.18-.2:PL+1.18-.08,CD+FT,'v',.3); pull(gw,hxp,PL+1.18+.18,CD+FT,'v',.3);
+    }
     southFridge(K,tallTop,tf);
   }
   if(STY.crown)B(gw,-1.497,tallTop,0,1.517,.05,CD+.05,tf);
@@ -1007,9 +1009,9 @@ function island(K){
   if(ptOn())passCabinet(K);
 }
 // base cabinet under the south pass-through: from the east wall west to 1200 clear of the fridge front (clear of the 700 east door)
-// 3 walls: fridge in a full-height housing on the south wall (x .60-1.50), fronts facing north
+// 3 walls: fridge in a full-height housing on the south wall (x 1.20-2.10), 600 clear of the west tall run
 function southFridge(K,tallTop,tf){
-  const g=runGroup(K,1.5,D-.003,Math.PI);
+  const g=runGroup(K,2.1,D-.003,Math.PI);
   B(g,0,0,0,.02,tallTop,CD+FT,tf); B(g,.88,0,0,.02,tallTop,CD+FT,tf);
   B(g,.02,1.92,0,.86,tallTop-1.92,CD-.002,tf); front(g,.02,1.92,.86,tallTop-1.92,CD,tf);
   if(STY.pull==='bar')pull(g,.45,1.92+.06,CD+FT,'h',.3); else pull(g,.45,1.92+.07,CD+FT,'h',.2);
@@ -1017,14 +1019,14 @@ function southFridge(K,tallTop,tf){
   if(STY.crown)B(g,-.01,tallTop,0,.92,.05,CD+.05,tf);
 }
 function passCabinet(K){
-  const g=runGroup(K,W,D,Math.PI), cd=.42-FT, topY=WT-STY.topT, len=TW()?2.4:2.02;
-  baseRun(g,0,TW()?[{w:.5,t:'drawers'},{w:1.0,t:'doors',n:2},{w:.45,t:'drawers'},{w:.45,t:'doors',n:1,h:'l'}]:[{w:.5,t:'drawers'},{w:1.0,t:'doors',n:2},{w:.52,t:'drawers'}],PAL.lower,{cd});
+  const g=runGroup(K,W,D,Math.PI), cd=.42-FT, topY=WT-STY.topT, len=TW()?1.8:2.02;
+  baseRun(g,0,TW()?[{w:.5,t:'drawers'},{w:.8,t:'doors',n:2},{w:.5,t:'drawers'}]:[{w:.5,t:'drawers'},{w:1.0,t:'doors',n:2},{w:.52,t:'drawers'}],PAL.lower,{cd});
   B(g,-.005,topY,0,len+.01,STY.topT,.44,M.top);
   B(g,0,WT,0,len,1.04-WT,.012,M.splash,false);
   // a little life on the counter: fruit bowl and a plant at the hatch
   C(g,.12,.05,.58,WT+.025,.22,state.style==='farm'?M.shelfWood:M.potWhite,null,28,.08);
   for(let k=0;k<4;k++)S(g,.04,.58+(rnd()-.5)*.12,WT+.07+rnd()*.03,.22+(rnd()-.5)*.1,state.style==='farm'?M.apple:M.lemon,1,.9,1);
-  C(g,.07,.14,1.83,WT+.07,.2,state.style==='med'?M.terra:M.potWhite,null,24,.055); for(let k=0;k<8;k++)S(g,.05,1.83+(rnd()-.5)*.1,WT+.19+rnd()*.1,.2+(rnd()-.5)*.1,k%2?M.plant:M.plant2,1,.7,1);
+  C(g,.07,.14,TW()?1.6:1.83,WT+.07,.2,state.style==='med'?M.terra:M.potWhite,null,24,.055); for(let k=0;k<8;k++)S(g,.05,(TW()?1.6:1.83)+(rnd()-.5)*.1,WT+.19+rnd()*.1,.2+(rnd()-.5)*.1,k%2?M.plant:M.plant2,1,.7,1);
 }
 function stool(p,x,z){
   const k=STY.stool, g=new THREE.Group(); g.position.set(x,0,z); p.add(g);
@@ -1144,9 +1146,9 @@ function updateUI(){
   document.querySelectorAll('[data-island]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.island===state.island)));
   document.querySelectorAll('[data-pt]').forEach(b=>{b.setAttribute('aria-checked',String(TW()?b.dataset.pt==='on':b.dataset.pt===state.pt)); b.disabled=TW();});
   document.querySelectorAll('[data-layout]').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.layout===state.layout)));
-  document.getElementById('layout-note').textContent=TW()?'Fridge on the south wall beside the pass-through cabinet; tall units run to the south corner; 700 clear above the cooking counter.':'Fridge and pantry at the south end of the west wall; corner left open.';
+  document.getElementById('layout-note').textContent=TW()?'Fridge on the south wall beside the pass-through cabinet, 600 clear of the tall units; tall units run to the south corner; 700 clear above the cooking counter.':'Fridge and pantry at the south end of the west wall; corner left open.';
   const on=ptOn();
-  document.getElementById('pt-note').textContent=TW()?'Always included in 3 walls: 2400 long, 420 deep, from the east wall to the fridge. Island moves 200 north (1000 walkways).':on?'2020 long, 420 deep, under the hatch to the east wall. The island moves 200 north to keep 1000 walkways.':'Walkways stay at 1200 all round the island.';
+  document.getElementById('pt-note').textContent=TW()?'Always included in 3 walls: 1800 long, 420 deep, from the east wall to the fridge. Island moves 200 north (1000 walkways).':on?'2020 long, 420 deep, under the hatch to the east wall. The island moves 200 north to keep 1000 walkways.':'Walkways stay at 1200 all round the island.';
   document.getElementById('ks-island').textContent=on?'1550 × 890, walkways 1000 north and south, 1200 east and west':'1550 × 890, 1200 walkways';
   document.querySelectorAll('[data-palette]').forEach(b=>{
     b.setAttribute('aria-checked',String(b.dataset.palette===state.palette));
@@ -1171,7 +1173,7 @@ function specRows(){
     ['Lighting',{tray:'Lit ceiling tray, downlights, linear pendant',beams:'Wood beams, rattan pendants',flat:'Downlights, dome pendants'}[STY.ceiling]],
     ['Island',state.island==='stools'?'Storage one side, 3 stools on the other':'Storage on both sides'],
     ['Layout',TW()?'3 walls: fridge on the south wall, tall units to the corner':'Open corner'],
-    ['Pass-through',TW()?'420-deep cabinet below the hatch, 2400 long, fridge beside it':state.pt==='on'?'420-deep cabinet below the hatch, 2020 long':'Open wall below the hatch']
+    ['Pass-through',TW()?'420-deep cabinet below the hatch, 1800 long, fridge beside it':state.pt==='on'?'420-deep cabinet below the hatch, 2020 long':'Open wall below the hatch']
   ];
 }
 const cap=s=>s[0].toUpperCase()+s.slice(1);
