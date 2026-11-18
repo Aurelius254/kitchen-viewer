@@ -198,14 +198,7 @@ const PALETTES={
   // Two colours, lightest first
   'green-white':{name:'Green & white', lower:'green', upper:'white', tall:'white', island:'green'},
   'brown-white':{name:'Brown & white', lower:'walnut', upper:'white', tall:'white', island:'walnut'},
-  'brown-green':{name:'Brown & green', lower:'walnut', upper:'green', tall:'green', island:'walnut'},
-  // Three or more colours (walls, then a ceiling or floor feature), lightest first
-  'teal':{name:'Teal', lower:'teal', upper:'tanwood', tall:'tanwood', island:'teal',
-          wall:'#ebe6dd', wallName:'warm cream', feat:{at:'floor', color:'#c8b49e', name:'sand rug'}},
-  'mocha':{name:'Mocha', lower:'mocha', upper:'caramel', tall:'caramel', island:'mocha',
-          wall:'#efc6a4', wallName:'soft peach', feat:{at:'ceiling', color:'#2b1d14', name:'dark espresso ceiling feature'}},
-  'espresso':{name:'Espresso', lower:'darkbrown', upper:'rustwood', tall:'rustwood', island:'darkbrown',
-          wall:'#d6ad84', wallName:'warm tan', feat:{at:'ceiling', color:'#3a3732', name:'charcoal ceiling feature'}}
+  'brown-green':{name:'Brown & green', lower:'walnut', upper:'green', tall:'green', island:'walnut'}
 };
 const FIN={
   green:{modern:'#8b9a7f', med:'#7b8a5f', farm:'#86998a'},
@@ -422,7 +415,7 @@ function finMat(kind){
   return FINC[kind]=m;
 }
 function topKind(){if(state.style==='med')return 'travertine'; if(state.style==='farm')return 'marble'; return (PAL.lower==='walnut'&&PAL.upper==='walnut')?'charcoal':'quartz';}
-function hwKind(){if(state.style==='med')return 'iron'; if(state.style==='farm')return 'brass'; return (PAL.lower==='walnut'||PAL.upper==='oak'||PAL.tall==='walnut'||['slate-teal','dusty-blue','greige','navy','teal','mocha','espresso'].includes(state.palette))?'brass':'black';}
+function hwKind(){if(state.style==='med')return 'iron'; if(state.style==='farm')return 'brass'; return (PAL.lower==='walnut'||PAL.upper==='oak'||PAL.tall==='walnut'||['slate-teal','dusty-blue','greige','navy'].includes(state.palette))?'brass':'black';}
 let M={};
 // limewash texture is already warm cream; push the palette's wall colour through it gently
 function tintOn(hex){const c=new THREE.Color(hex), w=new THREE.Color('#ece1cc'); return new THREE.Color(Math.min(1,c.r/w.r),Math.min(1,c.g/w.g),Math.min(1,c.b/w.b));}
@@ -1127,7 +1120,7 @@ camera.position.copy(VIEWS.overview.p); controls.target.copy(VIEWS.overview.t);
 /* ---------------------------------------------------------------- UI */
 const SWATCH={green:['green','green'],brown:['walnut','walnut'],white:['white','white'],'brown-white':['walnut','white'],'green-white':['green','white'],'brown-green':['walnut','green'],
  
-  'slate-teal':['slateteal','slateteal'],teal:['teal','cream'],mocha:['mocha','caramel'],espresso:['darkbrown','tanbrown'],'dusty-blue':['dustyblue','dustyblue'],greige:['greige','greige'],navy:['navy','navy']};
+  'slate-teal':['slateteal','slateteal'],'dusty-blue':['dustyblue','dustyblue'],greige:['greige','greige'],navy:['navy','navy']};
 function swColor(k){const v=FV(k,state.style); return typeof v==='string'?v:v[0];}
 const swWrap=document.getElementById('swatches');
 for(const key of Object.keys(PALETTES)){
