@@ -1087,6 +1087,9 @@ function rebuild(){
   makeMats();
   ROOT=new THREE.Group(); scene.add(ROOT);
   buildRoom(); buildKitchen(); buildLights();
+  // 3 walls: the fridge stands where the sink-wall camera was, so step the camera east of it
+  VIEWS.sink.p.set(...(TW()?[2.45,1.62,4.0]:[1.55,1.62,4.4]));
+  if(camera.position.x>1.15&&camera.position.x<2.15&&camera.position.z>3.8&&camera.position.y<1.9&&TW())camera.position.copy(VIEWS.sink.p);
   updateSpec(); updateUI(); if(typeof updatePdfNote==='function')updatePdfNote();
   try{localStorage.setItem('kitchen-studio',JSON.stringify(state))}catch(e){}
 }
